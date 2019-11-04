@@ -24,8 +24,10 @@ def detect(f):
         image.tobytes()
         print("Works")
     except Exception as e:
+        print("Corrupt\n\n")
         print(e)
 
 
 if __name__ == '__main__':
     detect("./River_GK_rojo_.png")
+    detect("./Test.jpg")
