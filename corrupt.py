@@ -6,7 +6,7 @@ from PIL import Image
 from PIL import ImageFile
 
 from datetime import datetime, timezone
-
+number_saved = 0
 
 ImageFile.MAXBLOCK = 1
 
@@ -57,12 +57,26 @@ def tag_page(page, site, tag):
 def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
     if not call_home(site):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
-    #TODO: Continue writing based on previous save_edit functions.
-    try:
-        page.save(text,summary=edit_summary, bot=isBotEdit, minor=isMinor)
-        print("Saved page")
-    except [[EditError]]:
-        print("Error")
+    time = 0
+    while True:
+        if time == 1:
+            text = site.Pages["File:" + page.page_title].text()]
+        try:
+            page.save(text,summary=edit_summary, bot=isBotEdit, minor=isMinor)
+            print("Saved page")
+            global number_saved
+            number_saved += 1
+            if time == 1:
+                time = 0
+            break
+        except [[EditError]]:
+            print("Error")
+            time = 1
+            sleep(5) # sleep for 5 seconds before trying again
+            continue
+        except [[ProtectedPageError]]:
+            print('Could not edit ' + page.page_title + ' due to protection')
+        break
 
 if __name__ == '__main__':
     #image_is_corrupt("./River_GK_rojo_.png")
