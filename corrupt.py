@@ -1,3 +1,6 @@
+#TODO: Should the corruption checking methods etc be forked into their own
+# file (for reuse in others)?
+
 from __future__ import absolute_import
 
 import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathlib
@@ -33,8 +36,8 @@ def call_home(site_obj):
 
 
 # Process image
-def process_file(page_name, site):
-    image_page = site.Pages["""""" + str(page_name) + """"""]
+def process_file(page, site):
+    image_page = page #site.Pages["""""" + str(page_name) + """"""]
     text = None
     # Download image
     with open("./Example.jpg","wb") as fd:
@@ -77,6 +80,66 @@ def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
         except [[ProtectedPageError]]:
             print('Could not edit ' + page.page_title + ' due to protection')
         break
+
+def store_run_pages():
+    global pages_run_set
+    with open('run.txt', 'a+') as f:
+        for item in pages_run_set:
+            f.write('%s\n' % item)
+
+def load_run_pages():
+    global pages_run_set
+    print("Loading pages")
+    with open('run.txt', 'r') as f:
+        for item in f:
+            pages_run_set.add(item)
+            print("Adding " + item) #FIXME: This spams console a LOT
+
+#TODO: This method most likely needs complete rewrite as this task isn't
+# dealing with a category, but rather every file on Commons.
+def run(utils):
+    site = utils[1]
+    offset = utils[2]
+    limit = utils[3]
+    global number_saved
+    global pages_run_set
+    load_run_pages()
+    for page in site.Categories['']: #TODO: This line needs changing. Won't work in this form. Needs to just scan every file in commons plus new uploads.......
+        if offset > 0:
+            offset -= 1
+            print("Skipped due to offset config")
+            continue
+        print("Working with: " + page.name)
+        print(number_saved)
+        if number_saved < limit:
+            text = page.text()
+            try:
+                if page.name in pages_run_set:
+                    print("Found duplicate, no need to check")
+                    continue
+                process_file(page, site)
+                pages_run_set.add(page.name)
+                print("Added")
+            except ValueError:
+                raise
+        else:
+            store_run_pages()
+            return # tun out of pages in limited run
+    pass
+
+def main():
+    site = mwclient.Site(('https', 'commons.wikimedia.org'), '/w/')
+    config = configparser.RawConfigParser()
+    config.read('credentials.txt')
+    try:
+        site.login(config.get('enwiki_sandbot', 'username'), config.get('enwiki_sandbot', 'password'))
+    except errors.LoginError as e:
+        print(e)
+        raise ValueError("Login failed")
+    offset = 0
+    limit = 2
+    utils = [config,site,offset,limit]
+    run(utils)
 
 if __name__ == '__main__':
     #image_is_corrupt("./River_GK_rojo_.png")
