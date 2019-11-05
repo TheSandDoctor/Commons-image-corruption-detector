@@ -81,12 +81,14 @@ def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
             print('Could not edit ' + page.page_title + ' due to protection')
         break
 
+# This should _really_ be done using a database. Perhaps pybind11 eventually(?)
 def store_run_pages():
     global pages_run_set
     with open('run.txt', 'a+') as f:
         for item in pages_run_set:
             f.write('%s\n' % item)
 
+# This should _really_ be done using a database. Perhaps pybind11 eventually(?)
 def load_run_pages():
     global pages_run_set
     print("Loading pages")

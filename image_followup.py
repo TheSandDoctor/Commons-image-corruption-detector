@@ -8,6 +8,8 @@
 # also be re-checked prior to nomination to ensure that it has not been fixed.
 # If the image is fixed, then remove the template and take no further action.
 
+# This should _really_ be done using a database. Perhaps pybind11 eventually(?)
+
 from __future__ import absolute_import
 
 import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathlib
