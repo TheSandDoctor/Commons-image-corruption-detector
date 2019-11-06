@@ -14,6 +14,8 @@ from __future__ import absolute_import
 
 import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathlib
 from image_corruption_utils import *
+import mysql.connector
+from database_stuff import store_image, have_seen_image
 
 #TODO: Write file
 

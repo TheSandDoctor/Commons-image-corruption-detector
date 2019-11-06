@@ -7,6 +7,7 @@ import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathl
 
 from datetime import datetime, timezone
 from image_corruption_utils import *
+from database_stuff import store_image, have_seen_image
 
 
 number_saved = 0
@@ -37,6 +38,25 @@ def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
         break
 
 
+# Process image
+def process_file(page, site):
+    image_page = page #site.Pages["""""" + str(page_name) + """"""]
+    text = None
+    # Download image
+    with open("./Example.jpg","wb") as fd:
+        image_page.download(fd)
+    # Read and check if valid
+    with open("./Example.jpg", "rb") as f:
+        result = image_is_corrupt(f) #TODO: Add logic to tag page
+    if result:
+        text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
+        save_page(text,"Image detected as corrupt, tagging.")
+        store_image(page.name, True) # store in database
+        print("Saved page")
+    else:
+        store_image(page.name, False) # store in database
+
+
 #TODO: This method most likely needs complete rewrite as this task isn't
 # dealing with a category, but rather every file on Commons.
 def run(utils):
@@ -46,7 +66,7 @@ def run(utils):
     global number_saved
     global pages_run_set
     load_run_pages()
-    for page in site.Categories['']: #TODO: This line needs changing. Won't work in this form. Needs to just scan every file in commons plus new uploads.......
+    for page in site.allimages(): #TODO: Should this be allpages(namespace='6')?
         if offset > 0:
             offset -= 1
             print("Skipped due to offset config")
@@ -56,12 +76,12 @@ def run(utils):
         if number_saved < limit:
             text = page.text()
             try:
-                if page.name in pages_run_set:
+                if have_seen_image(page.title):#page.name in pages_run_set:
                     print("Found duplicate, no need to check")
                     continue
                 process_file(page, site)
-                pages_run_set.add(page.name)
-                print("Added")
+                #pages_run_set.add(page.name)
+                #print("Added")
             except ValueError:
                 raise
         else:

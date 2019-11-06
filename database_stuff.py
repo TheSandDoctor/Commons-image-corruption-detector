@@ -1,0 +1,51 @@
+from __future__ import print_function
+from datetime import date, datetime, timedelta
+import mysql.connector
+
+config = {
+  'user': 'scott',
+  'password': 'password',
+  'host': '127.0.0.1',
+  'database': 'images',
+  'raise_on_warnings': True
+}
+insert_image = ("INSERT INTO images_viewed "
+                "(title, isCorrupt, date_scanned, to_delete_nom) "
+                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s)")
+
+def getNextMonth():
+    return datetime.now().date() + timedelta(days=30)
+
+
+def store_image(title, isCorrupt):
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    if isCorrupt:
+        image_info = {
+            'title': title,
+            'isCorrupt': isCorrupt,
+            'date_scanned': datetime.now.date(),
+            'to_delete_nom': getNextMonth(),
+        }
+    else:
+        image_data = {
+            'title': title,
+            'isCorrupt': isCorrupt,
+            'date_scanned': datetime.now.date(),
+        }
+    cursor.execute(insert_image, image_data)
+    cnx.commit()
+    print(mycursor.rowcount, "record inserted.")
+    cnx.close()
+
+
+def have_seen_image(title):
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    sql = "SELECT title FROM images_viewed WHERE title = %s"
+    cursor.execute(sql, title)
+    msg = cursor.fetchone()
+    cnx.close()
+    if not msg:
+        return False
+    return True
