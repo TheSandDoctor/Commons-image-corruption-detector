@@ -3,14 +3,6 @@ from PIL import ImageFile
 import mysql.connector
 ImageFile.MAXBLOCK = 1
 
-config = {
-  'user': 'scott',
-  'password': 'password',
-  'host': '127.0.0.1',
-  'database': 'employees',
-  'raise_on_warnings': True
-}
-
 # Check if image is corrupt. If an image is corrupt, it will fail .tobytes()
 def image_is_corrupt(f):
     try:
