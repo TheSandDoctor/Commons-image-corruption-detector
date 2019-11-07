@@ -8,18 +8,19 @@ import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathl
 from datetime import datetime, timezone
 from image_corruption_utils import *
 from database_stuff import store_image, have_seen_image
+import os
 
 
 number_saved = 0
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
 def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
-    if not call_home(site):
+    if not call_home(site, "full_scan"):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
     time = 0
     while True:
         if time == 1:
-            text = site.Pages["File:" + page.page_title].text()]
+            text = site.Pages["File:" + page.page_title].text()
         try:
             page.save(text,summary=edit_summary, bot=isBotEdit, minor=isMinor)
             print("Saved page")
@@ -42,18 +43,20 @@ def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
 def process_file(page, site):
     image_page = page #site.Pages["""""" + str(page_name) + """"""]
     text = None
+    _, ext = os.path.splitext(image_page.page_title)    # get filetype
     # Download image
-    with open("./Example.jpg","wb") as fd:
+    with open("./Example" + ext,"wb") as fd:
         image_page.download(fd)
     # Read and check if valid
-    with open("./Example.jpg", "rb") as f:
-        result = image_is_corrupt(f) #TODO: Add logic to tag page
-    if result:
+    with open("./Example" + ext, "rb") as f:
+        result = image_is_corrupt(f)
+    del ext # no longer a needed variable
+    if result: # image corrupt
         text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
         save_page(text,"Image detected as corrupt, tagging.")
         store_image(page.name, True) # store in database
         print("Saved page")
-    else:
+    else: # image not corrupt
         store_image(page.name, False) # store in database
 
 
@@ -64,9 +67,7 @@ def run(utils):
     offset = utils[2]
     limit = utils[3]
     global number_saved
-    global pages_run_set
-    load_run_pages()
-    for page in site.allimages(): #TODO: Should this be allpages(namespace='6')?
+    for page in site.allimages(): # allimages() avoids issues with non-images
         if offset > 0:
             offset -= 1
             print("Skipped due to offset config")
@@ -76,7 +77,7 @@ def run(utils):
         if number_saved < limit:
             text = page.text()
             try:
-                if have_seen_image(page.title):#page.name in pages_run_set:
+                if have_seen_image(page.name):#page.name in pages_run_set:
                     print("Found duplicate, no need to check")
                     continue
                 process_file(page, site)
@@ -85,9 +86,8 @@ def run(utils):
             except ValueError:
                 raise
         else:
-            store_run_pages()
+            #store_run_pages()
             return # tun out of pages in limited run
-    pass
 
 def main():
     site = mwclient.Site(('https', 'commons.wikimedia.org'), '/w/')

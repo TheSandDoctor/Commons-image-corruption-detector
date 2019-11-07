@@ -38,10 +38,10 @@ def load_run_pages():
             print("Adding " + item) #FIXME: This spams console a LOT
 
 
-def call_home(site_obj):
+def call_home(site_obj, key):
     page = site_obj.Pages['User:TheSandBot/status']
     text = page.text()
-    data = json.loads(text)["run"]["corrupt_image_finder"]
+    data = json.loads(text)["run"]["corrupt_image_finder"][key]
     if str(data) == str(True):
         return True
     return False

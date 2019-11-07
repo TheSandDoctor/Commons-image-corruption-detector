@@ -14,7 +14,7 @@ insert_image = ("INSERT INTO images_viewed "
                 "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s)")
 
 def getNextMonth():
-    return datetime.now().date() + timedelta(days=30)
+    return datetime.now(timezone.utc).date() + timedelta(days=30)
 
 
 def store_image(title, isCorrupt):
@@ -24,14 +24,14 @@ def store_image(title, isCorrupt):
         image_info = {
             'title': title,
             'isCorrupt': isCorrupt,
-            'date_scanned': datetime.now.date(),
+            'date_scanned': datetime.now(timezone.utc).date(),
             'to_delete_nom': getNextMonth(),
         }
     else:
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
-            'date_scanned': datetime.now.date(),
+            'date_scanned': datetime.now(timezone.utc).date(),
         }
     cursor.execute(insert_image, image_data)
     cnx.commit()
