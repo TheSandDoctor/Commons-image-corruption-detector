@@ -13,11 +13,11 @@ insert_image = ("INSERT INTO images_viewed "
                 "(title, isCorrupt, date_scanned, to_delete_nom) "
                 "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s)")
 
-def getNextMonth():
-    return datetime.now(timezone.utc).date() + timedelta(days=30)
+def getNextMonth(day_count):
+    return datetime.now(timezone.utc).date() + timedelta(days=day_count)
 
 
-def store_image(title, isCorrupt):
+def store_image(title, isCorrupt, day_count = 30):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
     if isCorrupt:
@@ -25,7 +25,7 @@ def store_image(title, isCorrupt):
             'title': title,
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date(),
-            'to_delete_nom': getNextMonth(),
+            'to_delete_nom': getNextMonth(day_count),
         }
     else:
         image_data = {

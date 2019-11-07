@@ -14,7 +14,7 @@ import os
 number_saved = 0
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
-def save_page(text, edit_summary, isBotEdit = True, isMinor = True):
+def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
     if not call_home(site, "full_scan"):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
     time = 0
@@ -53,7 +53,7 @@ def process_file(page, site):
     del ext # no longer a needed variable
     if result: # image corrupt
         text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
-        save_page(text,"Image detected as corrupt, tagging.")
+        save_page(site, image_page, text,"Image detected as corrupt, tagging.")
         store_image(page.name, True) # store in database
         print("Saved page")
     else: # image not corrupt
