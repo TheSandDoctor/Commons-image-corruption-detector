@@ -43,10 +43,25 @@ def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
 def process_file(page, site):
     image_page = page #site.Pages["""""" + str(page_name) + """"""]
     text = None
+    failed = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
+    download_attempts = 0
     # Download image
-    with open("./Example" + ext,"wb") as fd:
-        image_page.download(fd)
+    while True:
+        with open("./Example" + ext,"wb") as fd:
+            image_page.download(fd)
+        #TODO: verify local hash vs api hash
+        if not verifyHash(site, getLocalHash("./Example" + ext), getRemoteHash(site, str(image_page.name))):
+            if download_attempts => 10:
+                failed = 1
+                break
+            download_attempts += 1
+            continue
+        else:
+            break
+    if failed:
+        raise ValueError("Hash check failed for " + "./Example" + ext + " vs " + str(image_page.name) + " " + download_attempts + " times. Aborting...")
+    del download_attempts
     # Read and check if valid
     with open("./Example" + ext, "rb") as f:
         result = image_is_corrupt(f)
@@ -80,7 +95,13 @@ def run(utils):
                 if have_seen_image(page.name):#page.name in pages_run_set:
                     print("Found duplicate, no need to check")
                     continue
-                process_file(page, site)
+                try:
+                    process_file(page, site)
+                except ValueError as e:
+                    print(e)
+                    with open('downloads_failed.txt', 'a+') as f:
+                        print(e,file=f) # print to file
+                    continue
                 #pages_run_set.add(page.name)
                 #print("Added")
             except ValueError:

@@ -1,6 +1,7 @@
 from PIL import Image
 from PIL import ImageFile
 import mysql.connector
+import hashlib
 ImageFile.MAXBLOCK = 1
 
 # Check if image is corrupt. If an image is corrupt, it will fail .tobytes()
@@ -14,6 +15,39 @@ def image_is_corrupt(f):
         print("Corrupt\n") # If we get this far, image is corrupt
         #print(e)
         return True
+
+def getLocalHash(filename):
+    """"This function returns the SHA-1 hash
+   of the file passed into it
+   Retrieved from https://www.programiz.com/python-programming/examples/hash-file
+   2019-11-07"""
+
+   h = hashlib.sha1() # make hash object
+   # open file for reading in binary mode
+   with open(filename, 'rb') as file:
+       # loop till the end of the file
+       chunk = 0
+       while chuck != b'':
+           # read only 1024 bytes at a time
+           chuck = file.read(1024)
+           h.update(chuck)
+
+   # return the hex representation of digest
+   return h.hexdigest()
+
+def getRemoteHash(site, filename):
+    # https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&format=json&prop=imageinfo&titles=File%3ASalda%C3%B1a%20-%20015%20(26238038617).jpg&iiprop=timestamp%7Cuser%7Csha1
+    result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
+    pageid = sha = None
+    for i in a['query']['pages']:
+        pageid = str(i)
+    for i in a['query']['pages'][pageid]['imageinfo']:
+        sha = i['sha1']
+    return sha
+
+
+def verifyHash(site, lhash, rhash): #TODO: Verify that everything works correctly
+    return lhash == rhash
 
 # Add template to image page
 def tag_page(page, site, tag):
