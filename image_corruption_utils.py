@@ -106,11 +106,33 @@ def getRemoteHash(site, filename):
         pageid = str(i)
     for i in result['query']['pages'][pageid]['imageinfo']:
         sha = i['sha1']
+    del pageid
     return sha
 
 
 def verifyHash(site, lhash, rhash): #TODO: Verify that everything works correctly
     return lhash == rhash
+
+#TODO: verify functionality, catch any errors
+def getUploaderAndTimestamp(site, filename):
+    result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
+    pageid = user = timestamp = None
+    for i in result['query']['pages']:
+        pageid = str(i)
+    for i in result['query']['pages'][pageid]['imageinfo']:
+        user = i['user']
+        timestamp = i['timestamp']
+    del pageid
+    return [user, timestamp]
+
+#TODO: Formalize/improve
+def notifyUser(site, image, user, time_duration):
+    msg = "Hello " + user + ", it appears that the version of [[" + str(image.name) + "]] which you uploaded " + user[1]
+    msg += " is corrupt. Please review the image and correct this issue. TheSandBot will re-review this image again in " + time_duration
+    msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
+    user_talk = site.Pages['User talk:' + user]
+    user_talk.append(msg,summary="Notify about corrupt image [[" + str(image.name) + "]]", bot=True, minor=False, section='new')
+    print("Notified user of corrupt " + str(image.name))
 
 # Add template to image page
 def tag_page(page, site, tag):
