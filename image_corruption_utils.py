@@ -27,7 +27,7 @@ def getLocalHash(filename):
    with open(filename, 'rb') as file:
        # loop till the end of the file
        chunk = 0
-       while chuck != b'':
+       while chunk != b'':
            # read only 1024 bytes at a time
            chuck = file.read(1024)
            h.update(chuck)
@@ -39,9 +39,9 @@ def getRemoteHash(site, filename):
     # https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&format=json&prop=imageinfo&titles=File%3ASalda%C3%B1a%20-%20015%20(26238038617).jpg&iiprop=timestamp%7Cuser%7Csha1
     result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
     pageid = sha = None
-    for i in a['query']['pages']:
+    for i in result['query']['pages']:
         pageid = str(i)
-    for i in a['query']['pages'][pageid]['imageinfo']:
+    for i in result['query']['pages'][pageid]['imageinfo']:
         sha = i['sha1']
     return sha
 
