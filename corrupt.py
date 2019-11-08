@@ -8,6 +8,7 @@ import traceback, mwclient, sys, re, configparser, json, pathlib
 from datetime import datetime, timezone
 from image_corruption_utils import *
 from database_stuff import store_image, have_seen_image
+from PIL import FileFormatError
 import os
 
 
@@ -49,7 +50,11 @@ def process_file(page, site):
     # Download image
     while True:
         with open("./Example" + ext,"wb") as fd:
-            image_page.download(fd)
+            try:
+                image_page.download(fd)
+            except FileFormatError:
+                os.remove("./Example" + ext)    # file not an image.
+                raise
         #TODO: verify local hash vs api hash
         if not verifyHash(site, getLocalHash("./Example" + ext), getRemoteHash(site, str(image_page.name))):
             if download_attempts => 10:
@@ -97,10 +102,12 @@ def run(utils):
                     continue
                 try:
                     process_file(page, site)
-                except ValueError as e:
-                    print(e)
+                except FileFormatError as e: # File not an image. Best to just continue
+                    continue
+                except ValueError as e2:
+                    print(e2)
                     with open('downloads_failed.txt', 'a+') as f:
-                        print(e,file=f) # print to file
+                        print(e2,file=f) # print to file
                     continue
                 #pages_run_set.add(page.name)
                 #print("Added")
