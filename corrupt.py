@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import
 
-import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathlib
+import traceback, mwclient, sys, re, configparser, json, pathlib
 
 from datetime import datetime, timezone
 from image_corruption_utils import *
