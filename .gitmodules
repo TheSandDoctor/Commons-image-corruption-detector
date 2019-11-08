@@ -1,0 +1,3 @@
+[submodule "PIL"]
+	path = PIL
+	url = https://github.com/TheSandDoctor/Pillow
