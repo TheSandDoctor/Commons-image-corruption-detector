@@ -53,11 +53,11 @@ def process_file(page, site):
     if result: # image corrupt
         text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
         save_page(site, image_page, text,"Image detected as corrupt, tagging.")
-        store_image(page.name, True) # store in database
+        store_image(page.name, True, day_count = 7) # store in database
         print("Saved page and logged in database")
         # Notify the user that the file needs updating
         try: #TODO: Add record to database about successful notification?
-            notifyUser(site, image_page, getUploaderAndTimestamp(site, str(image_page.name)), "30 days")
+            notifyUser(site, image_page, getUploaderAndTimestamp(site, str(image_page.name)), "7 days")
         except: #TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.name) + " being corrupt.")
     else: # image not corrupt
