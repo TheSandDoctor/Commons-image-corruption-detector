@@ -1,6 +1,5 @@
 from PIL import Image
 from PIL import ImageFile
-from PIL import FileFormatError
 import mysql.connector
 import hashlib
 ImageFile.MAXBLOCK = 1
@@ -71,7 +70,7 @@ def image_is_corrupt(f):
         image.tobytes()
         print("Works")
         return False
-    except FileFormatError as e:
+    except Image.FileFormatError as e:
         print("Not an image")
         raise
     except Exception as e2:
