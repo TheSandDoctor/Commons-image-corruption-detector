@@ -129,7 +129,7 @@ def notifyUser(site, image, user, time_duration):
     msg = "Hello " + user + ", it appears that the version of [[" + str(image.name) + "]] which you uploaded " + user[1]
     msg += " is broken or corrupt. Please review the image and attempt to correct this issue by uploading a new version of the file. [[User:TheSandBot|TheSandBot]] will re-review this image again in " + time_duration
     msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
-    user_talk = site.Pages['User talk:' + user]
+    user_talk = site.Pages['User talk:' + user[0]]
     user_talk.append(msg,summary="Notify about corrupt image [[" + str(image.name) + "]]", bot=True, minor=False, section='new')
     print("Notified user of corrupt " + str(image.name))
 
