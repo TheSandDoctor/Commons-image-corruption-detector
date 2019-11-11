@@ -109,8 +109,11 @@ def getRemoteHash(site, filename):
     return sha
 
 
-def verifyHash(site, lhash, rhash): #TODO: Verify that everything works correctly
+def verifyHashMatch(site, lhash, rhash): #TODO: Verify that everything works correctly
     return lhash == rhash
+
+def verifyHash(site, local, image_page):
+    return verifyHashMatch(site, getLocalHash(local), getRemoteHash(site, str(image_page.name))))
 
 #TODO: verify functionality, catch any errors
 def getUploaderAndTimestamp(site, filename):

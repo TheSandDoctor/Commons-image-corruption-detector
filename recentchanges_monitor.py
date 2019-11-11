@@ -11,7 +11,6 @@ import mysql.connector
 from database_stuff import store_image, have_seen_image
 import os
 
-#TODO: finish writing file
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
 def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
@@ -39,13 +38,33 @@ def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
         break
 
 # Process image
-def process_file(page, site):
-    image_page = page #site.Pages["""""" + str(page_name) + """"""]
+def process_file(image_page, site):
     text = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
     # Download image
-    with open("./Example2" + ext,"wb") as fd:
-        image_page.download(fd)
+    text = failed = None
+    _, ext = os.path.splitext(image_page.page_title)    # get filetype
+    download_attempts = 0
+    # Download image
+    while True:
+        with open("./Example2" + ext,"wb") as fd:
+            try:
+                image_page.download(fd)
+            except FileFormatError:
+                os.remove("./Example2" + ext)    # file not an image.
+                raise
+        #TODO: verify local hash vs api hash
+        if not verifyHash(site, "./Example2" + ext, image_page):
+            if download_attempts => 10:
+                failed = 1
+                break
+            download_attempts += 1
+            continue
+        else:
+            break
+    if failed:
+        raise ValueError("Hash check failed for " + "./Example2" + ext + " vs " + str(image_page.name) + " " + download_attempts + " times. Aborting...")
+    del download_attempts
     # Read and check if valid
     with open("./Example2" + ext, "rb") as f:
         result = image_is_corrupt(f) #TODO: Add logic to tag page
@@ -103,4 +122,5 @@ def main():
 
 
 if __name__ == '__main__':
+    #main()
     pass

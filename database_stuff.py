@@ -13,6 +13,9 @@ insert_image = ("INSERT INTO images_viewed "
                 "(title, isCorrupt, date_scanned, to_delete_nom) "
                 "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s)")
 
+expired_images = {"SELECT title, isCorrupt, to_delete_nom FROM images_viewed"
+                "WHERE to_delete_nom = %s"}
+
 def getNextMonth(day_count):
     return datetime.now(timezone.utc).date() + timedelta(days=day_count)
 
@@ -37,6 +40,19 @@ def store_image(title, isCorrupt, day_count = 30):
     cnx.commit()
     print(mycursor.rowcount, "record inserted.")
     cnx.close()
+
+
+def get_expired_images():
+    """ Returns images whose expiry date is today (UTC) as a list. """
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    cursor.execute(expired_images, datetime.now(timezone.utc).date())
+    raw = cursor.fetchall() # returns tuples
+    cnx.close()
+    data = []
+    for i in raw:
+        data.append(i[0])
+    return data
 
 
 def have_seen_image(title):

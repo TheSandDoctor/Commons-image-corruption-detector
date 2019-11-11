@@ -41,10 +41,8 @@ def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
 
 
 # Process image
-def process_file(page, site):
-    image_page = page #site.Pages["""""" + str(page_name) + """"""]
-    text = None
-    failed = None
+def process_file(image_page, site):
+    text = failed = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
     download_attempts = 0
     # Download image
@@ -56,7 +54,7 @@ def process_file(page, site):
                 os.remove("./Example" + ext)    # file not an image.
                 raise
         #TODO: verify local hash vs api hash
-        if not verifyHash(site, getLocalHash("./Example" + ext), getRemoteHash(site, str(image_page.name))):
+        if not verifyHash(site, "./Example" + ext, image_page):
             if download_attempts => 10:
                 failed = 1
                 break
@@ -137,5 +135,5 @@ def main():
     run(utils)
 
 if __name__ == '__main__':
-    #image_is_corrupt("./River_GK_rojo_.png")
-    #image_is_corrupt("./Test.jpg")
+    #main()
+    pass
