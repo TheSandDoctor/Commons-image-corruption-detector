@@ -187,27 +187,12 @@ def notifyUser(site, image, user, time_duration, task_name):
             print('Could not edit [[User talk:' + user[0] + ']] due to protection')
             break
 
+
 # Add template to image page
 def tag_page(page, site, tag):
     text = page.text()
     text = tag + "\n" + text
     return text
-
-# This should _really_ be done using a database. Perhaps pybind11 eventually(?)
-def store_run_pages():
-    global pages_run_set
-    with open('run.txt', 'a+') as f:
-        for item in pages_run_set:
-            f.write('%s\n' % item)
-
-# This should _really_ be done using a database. Perhaps pybind11 eventually(?)
-def load_run_pages():
-    global pages_run_set
-    print("Loading pages")
-    with open('run.txt', 'r') as f:
-        for item in f:
-            pages_run_set.add(item)
-            print("Adding " + item) #FIXME: This spams console a LOT
 
 
 def call_home(site_obj, key):
