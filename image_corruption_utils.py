@@ -98,6 +98,14 @@ def getLocalHash(filename):
    return h.hexdigest()
 
 def getRemoteHash(site, filename):
+    """
+        Fetch remote hash from the mediawiki API.
+        This method returns a sha1 hash in the form of a string.
+        Parameters:
+            site: site object
+            filename: file name to get the remote hash from (string)
+        Returns: sha1 hash (as a string)
+    """
     # https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&format=json&prop=imageinfo&titles=File%3ASalda%C3%B1a%20-%20015%20(26238038617).jpg&iiprop=timestamp%7Cuser%7Csha1
     result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
     pageid = sha = None
@@ -109,14 +117,41 @@ def getRemoteHash(site, filename):
     return sha
 
 
-def verifyHashMatch(site, lhash, rhash): #TODO: Verify that everything works correctly
+def verifyHashMatch(site, lhash, rhash):
+    """
+        Verifies that two given hashes match.
+        Parameters:
+            lhash: First hash value (string)
+            rhash: Second hash value (string)
+        Returns: True if match, False if not
+    """
     return lhash == rhash
 
 def verifyHash(site, local, image_page):
+    """
+        A wrapper for verifyHashMatch() which returns the same result.
+        Parameters:
+            site: site object
+            local: local filename
+            image_page: image page object
+        Returns: True if match, False if not
+    """
     return verifyHashMatch(site, getLocalHash(local), getRemoteHash(site, str(image_page.name))))
 
-#TODO: verify functionality, catch any errors
+#TODO: verify functionality
 def getUploaderAndTimestamp(site, filename):
+    """
+        Get most recent file uploader and timestamp of that upload. This method
+        may potentially throw an error due to issues with the mediawiki software itself
+        it is unclear and unforeseeable what the specific errors may be at this time,
+        it is just a distinct possibility. As such, this method should _always_ be wrapped in
+        a try/except statement.
+
+        Parameters:
+            site: site object
+            filename: filename to fetch the information of (string)
+        Returns: [user, timestamp] list (user and timestamp both strings)
+    """
     result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
     pageid = user = timestamp = None
     for i in result['query']['pages']:
