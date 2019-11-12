@@ -128,14 +128,29 @@ def getUploaderAndTimestamp(site, filename):
     return [user, timestamp]
 
 #TODO: Formalize/improve further
-def notifyUser(site, image, user, time_duration):
+def notifyUser(site, image, user, time_duration, task_name):
+    if not call_home(site, task_name):
+        raise ValueError("Kill switch on-wiki is false. Terminating program.")
+    #time = 0
     msg = "Hello " + user + ", it appears that the version of [[" + str(image.name) + "]] which you uploaded " + user[1]
     msg += " is broken or corrupt. Please review the image and attempt to correct this issue by uploading a new version of the file. [[User:TheSandBot|TheSandBot]] will re-review this image again in " + time_duration
     msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
     user_talk = site.Pages['User talk:' + user[0]]
-    user_talk.append(msg,summary="Notify about corrupt image [[" + str(image.name) + "]]", bot=True, minor=False, section='new')
-    print("Notified user of corrupt " + str(image.name))
-
+    while True:
+        try:
+            user_talk.append(msg,summary="Notify about corrupt image [[" + str(image.name) + "]]", bot=True, minor=False, section='new')
+            print("Notified user of corrupt " + str(image.name))
+        #    if time == 1:
+            #    time = 0
+            break
+        except [[EditError]]:
+            print("Error")
+            #time = 1
+            sleep(5) # sleep for 5 seconds before trying again
+            continue
+        except [[ProtectedPageError]]:
+            print('Could not edit [[User talk:' + user[0] + ']] due to protection')
+            break
 
 # Add template to image page
 def tag_page(page, site, tag):

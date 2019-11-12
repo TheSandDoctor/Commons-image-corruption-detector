@@ -53,7 +53,6 @@ def process_file(image_page, site):
             except FileFormatError:
                 os.remove("./Example" + ext)    # file not an image.
                 raise
-        #TODO: verify local hash vs api hash
         if not verifyHash(site, "./Example" + ext, image_page):
             if download_attempts => 10:
                 failed = 1
@@ -83,8 +82,6 @@ def process_file(image_page, site):
         store_image(page.name, False) # store in database
 
 
-#TODO: This method most likely needs complete rewrite as this task isn't
-# dealing with a category, but rather every file on Commons.
 def run(utils):
     site = utils[1]
     offset = utils[2]
@@ -112,12 +109,9 @@ def run(utils):
                     with open('downloads_failed.txt', 'a+') as f:
                         print(e2,file=f) # print to file
                     continue
-                #pages_run_set.add(page.name)
-                #print("Added")
             except ValueError:
                 raise
         else:
-            #store_run_pages()
             return # tun out of pages in limited run
 
 def main():

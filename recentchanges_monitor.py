@@ -53,7 +53,6 @@ def process_file(image_page, site):
             except FileFormatError:
                 os.remove("./Example2" + ext)    # file not an image.
                 raise
-        #TODO: verify local hash vs api hash
         if not verifyHash(site, "./Example2" + ext, image_page):
             if download_attempts => 10:
                 failed = 1
