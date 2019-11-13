@@ -102,8 +102,6 @@ def run(site):
                 print("Found duplicate, no need to check")
                 continue
             process_file(page, site)
-            #pages_run_set.add(page.name)
-            #print("Added")
         except ValueError:
             raise
 

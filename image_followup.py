@@ -92,6 +92,25 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
         try: #TODO: Add record to database about successful notification?
             notify_and_tag_for_deletion(site, image_page, username, calculateDifference(date_scanned))
         except: #TODO: Add record to database about failed notification?
+            pass
+    else: # image not corrupt
+        edit_summary = "Removing [[Template:TSB image identified corrupt]] - image no longer corrupt"
+        while True:
+            code = mwparserfromhell.parse(image_page.text())
+            for template in code.filter_templates():
+                if template.name.matches("Template:User:TheSandDoctor/Template:TSB image identified corrupt"):
+                    code.remove(template) # template no longer needed
+                    try:
+                        image_page.save(text, summary=edit_summary, bot=True, minor=True)
+                        break
+                    except errors.EditError:
+                        print("Error")
+                        sleep(5)   # sleep for 5 seconds before trying again
+                        continue
+                    except errors.ProtectedPageError:
+                        print('Could not edit ' + page.page_title + ' due to protection')
+                        break
+            break # end for
 
 
 def main():
