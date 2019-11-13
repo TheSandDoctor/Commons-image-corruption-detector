@@ -16,6 +16,8 @@ insert_image = ("INSERT INTO images_viewed "
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                 "WHERE to_delete_nom = %s"}
 
+update_entry = {"UPDATE images_viewed SET isCorrupt = %s, to_delete_nom = %s WHERE title = %s"}
+
 def getNextMonth(day_count):
     return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%m/%d/%Y')
 
@@ -79,3 +81,10 @@ def have_seen_image(title):
     if not msg:
         return False
     return True
+
+def update_entry(title, isCorrupt, to_delete_nom):
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    cursor.execute(update_entry, (isCorrupt, to_delete_nom, title))
+    cnx.commit()
+    print("Record updated")

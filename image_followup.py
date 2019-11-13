@@ -102,6 +102,8 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                     code.remove(template) # template no longer needed
                     try:
                         image_page.save(text, summary=edit_summary, bot=True, minor=True)
+                        # update database entry to set image as no longer corrupt and nullify to_delete_nom
+                        update_entry(str(image_page.name), False, "NULL")
                         break
                     except errors.EditError:
                         print("Error")
