@@ -77,7 +77,7 @@ def get_expired_images():
 def have_seen_image(site, title):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    getRemoteHash(site, title)
+    _, hash = getRemoteHash(site, title)
     sql = "SELECT title FROM images_viewed WHERE title = %s AND hash=%s"
     cursor.execute(sql, (title, hash))
     msg = cursor.fetchone()
