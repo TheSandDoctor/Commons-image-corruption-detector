@@ -117,26 +117,18 @@ def getRemoteHash(site, filename):
     return sha
 
 
-def verifyHashMatch(site, lhash, rhash):
-    """
-        Verifies that two given hashes match.
-        Parameters:
-            lhash: First hash value (string)
-            rhash: Second hash value (string)
-        Returns: True if match, False if not
-    """
-    return lhash == rhash
-
 def verifyHash(site, local, image_page):
     """
-        A wrapper for verifyHashMatch() which returns the same result.
+        Verifies that two given hashes match.
         Parameters:
             site: site object
             local: local filename
             image_page: image page object
         Returns: True if match, False if not
     """
-    return verifyHashMatch(site, getLocalHash(local), getRemoteHash(site, str(image_page.name))))
+    lhash = getLocalHash(local)
+    rhash = getRemoteHash(site, str(image_page.name))
+    return lhash == rhash
 
 #TODO: verify functionality
 def getUploaderAndTimestamp(site, filename):
