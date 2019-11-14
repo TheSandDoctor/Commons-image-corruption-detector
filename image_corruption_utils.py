@@ -43,7 +43,7 @@ def getLocalHash(filename):
 def getRemoteHash_PWB(site, filename):
     # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2633
     fp = pywikibot.FilePage(site, filename)
-    return fp.latest_file_info.sha1
+    return str(fp.latest_file_info.sha1)
 
 def getRemoteHash(site, filename):
     """
@@ -82,7 +82,7 @@ def verifyHash(site, local, image_page):
 def getUploaderAndTimestamp_PWB(site, filename):
     # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2634
     fp = pywikibot.FilePage(site, filename)
-    return [fp.latest_file_info.user,
+    return [str(fp.latest_file_info.user),
                 UnicodeType(fp.latest_file_info.timestamp.isoformat())]
 
 #TODO: verify functionality
@@ -111,6 +111,8 @@ def getUploaderAndTimestamp(site, filename):
 
 
 def notifyUser_PWB(site, image, time_duration, task_name):
+    if not call_home(site, task_name):
+        raise ValueError("Kill switch on-wiki is false. Terminating program.")
     user, timestamp = getUploaderAndTimestamp_PWB(site, image)
     tp = pywikibot.Page(site, "User talk:" + user]
     msg = "Hello " + user + ", it appears that the version of [[" + str(image.title()) + "]] which you uploaded " + timestamp
