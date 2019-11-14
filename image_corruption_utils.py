@@ -2,6 +2,8 @@ from PIL import Image
 from PIL import ImageFile
 import mysql.connector
 import hashlib
+import pywikibot
+from pwb_wrappers import retry_apierror
 ImageFile.MAXBLOCK = 1
 
 # Check if image is corrupt. If an image is corrupt, it will fail .tobytes()
@@ -38,6 +40,11 @@ def getLocalHash(filename):
    # return the hex representation of digest
    return h.hexdigest()
 
+def getRemoteHash_PWB(site, filename):
+    # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2633
+    fp = pywikibot.FilePage(site, filename)
+    return fp.latest_file_info.sha1
+
 def getRemoteHash(site, filename):
     """
         Fetch remote hash from the mediawiki API.
@@ -72,6 +79,12 @@ def verifyHash(site, local, image_page):
     result = lhash == rhash
     return [result, rhash]
 
+def getUploaderAndTimestamp_PWB(site, filename):
+    # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2634
+    fp = pywikibot.FilePage(site, filename)
+    return [fp.latest_file_info.user,
+                UnicodeType(fp.latest_file_info.timestamp.isoformat())]
+
 #TODO: verify functionality
 def getUploaderAndTimestamp(site, filename):
     """
@@ -95,6 +108,21 @@ def getUploaderAndTimestamp(site, filename):
         timestamp = i['timestamp']
     del pageid
     return [user, timestamp]
+
+
+def notifyUser_PWB(site, image, time_duration, task_name):
+    user, timestamp = getUploaderAndTimestamp_PWB(site, image)
+    tp = pywikibot.Page(site, "User talk:" + user]
+    msg = "Hello " + user + ", it appears that the version of [[" + str(image.title()) + "]] which you uploaded " + timestamp
+    msg += " is broken or corrupt. Please review the image and attempt to correct this issue by uploading a new version of the file. [[User:TheSandBot|TheSandBot]] will re-review this image again in " + time_duration
+    msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
+
+    summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
+    retry_apierror(
+        lambda:
+        filepage.save(appendtext=msg, section=new, #FIXME: appendtext and section=new surely don't play together(?)
+                      summary=summary, minor=True, botflag=True, force=True)
+    )
 
 #TODO: Formalize/improve further
 def notifyUser(site, image, user, time_duration, task_name):
@@ -128,6 +156,11 @@ def tag_page(page, site, tag):
     text = tag + "\n" + text
     return text
 
+def call_home_PWB(site_obj, key):
+    page = pywikibot.Page(site_obj, 'User:TheSandBot/status')
+    text = page.text
+    data = json.loads(text)["run"]["corrupt_image_finder"][key]
+    return str(data) == str(True)
 
 def call_home(site_obj, key):
     page = site_obj.Pages['User:TheSandBot/status']
