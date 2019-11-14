@@ -42,7 +42,7 @@ def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
 
 # Process image
 def process_file(image_page, site):
-    text = failed = None
+    text = failed = hash = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
     download_attempts = 0
     # Download image
@@ -53,7 +53,8 @@ def process_file(image_page, site):
             except FileFormatError:
                 os.remove("./Example" + ext)    # file not an image.
                 raise
-        if not verifyHash(site, "./Example" + ext, image_page):
+        hashResult, hash = verifyHash(site, "./Example2" + ext, image_page)
+        if not hashResult:
             if download_attempts => 10:
                 failed = 1
                 break
@@ -71,7 +72,7 @@ def process_file(image_page, site):
     if result: # image corrupt
         text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
         save_page(site, image_page, text,"Image detected as corrupt, tagging.")
-        store_image(page.name, True) # store in database
+        store_image(page.name, True, hash = hash) # store in database
         print("Saved page and logged in database")
         # Notify the user that the file needs updating
         try: #TODO: Add record to database about successful notification?
@@ -79,7 +80,7 @@ def process_file(image_page, site):
         except: #TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.name) + " being corrupt.")
     else: # image not corrupt
-        store_image(page.name, False) # store in database
+        store_image(page.name, False, hash = hash) # store in database
 
 
 def run(utils):
@@ -97,7 +98,7 @@ def run(utils):
         if number_saved < limit:
             text = page.text()
             try:
-                if have_seen_image(page.name):#page.name in pages_run_set:
+                if have_seen_image(site, page.name):
                     print("Found duplicate, no need to check")
                     continue
                 try:

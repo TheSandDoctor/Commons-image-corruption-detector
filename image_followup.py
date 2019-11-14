@@ -15,7 +15,7 @@ from __future__ import absolute_import
 import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathlib
 from image_corruption_utils import *
 import mysql.connector
-from database_stuff import store_image, have_seen_image, get_expired_images
+from database_stuff import have_seen_image, get_expired_images
 
 def tagForDeletion(site, page, day_count):
 """
@@ -62,7 +62,7 @@ def notify_and_tag_for_deletion(site, page, username, day_count):
 
 def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     image_page = site.Pages[image]
-    text = failed = None
+    text = failed = hash = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
     download_attempts = 0
     # Download image
@@ -73,7 +73,8 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
             except FileFormatError:
                 os.remove("./Example3" + ext)    # file not an image.
                 raise
-        if not verifyHash(site, "./Example3" + ext, image_page):
+        hashResult, hash = verifyHash(site, "./Example2" + ext, image_page)
+        if not hashResult:
             if download_attempts => 10:
                 failed = 1
                 break
@@ -95,6 +96,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
             pass
     else: # image not corrupt
         edit_summary = "Removing [[Template:TSB image identified corrupt]] - image no longer corrupt"
+
         while True:
             code = mwparserfromhell.parse(image_page.text())
             for template in code.filter_templates():
@@ -103,7 +105,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                     try:
                         image_page.save(text, summary=edit_summary, bot=True, minor=True)
                         # update database entry to set image as no longer corrupt and nullify to_delete_nom
-                        update_entry(str(image_page.name), False, "NULL")
+                        update_entry(str(image_page.name), False, "NULL", hash)
                         break
                     except errors.EditError:
                         print("Error")

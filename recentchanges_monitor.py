@@ -42,7 +42,7 @@ def process_file(image_page, site):
     text = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
     # Download image
-    text = failed = None
+    text = failed = hash = None
     _, ext = os.path.splitext(image_page.page_title)    # get filetype
     download_attempts = 0
     # Download image
@@ -53,7 +53,8 @@ def process_file(image_page, site):
             except FileFormatError:
                 os.remove("./Example2" + ext)    # file not an image.
                 raise
-        if not verifyHash(site, "./Example2" + ext, image_page):
+        hashResult, hash = verifyHash(site, "./Example2" + ext, image_page)
+        if not hashResult:
             if download_attempts => 10:
                 failed = 1
                 break
@@ -71,7 +72,7 @@ def process_file(image_page, site):
     if result: # image corrupt
         text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
         save_page(site, image_page, text,"Image detected as corrupt, tagging.")
-        store_image(page.name, True, day_count = 7) # store in database
+        store_image(page.name, True, day_count = 7, hash) # store in database
         print("Saved page and logged in database")
         # Notify the user that the file needs updating
         try: #TODO: Add record to database about successful notification?
@@ -79,16 +80,17 @@ def process_file(image_page, site):
         except: #TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.name) + " being corrupt.")
     else: # image not corrupt
-        store_image(page.name, False) # store in database
+        store_image(page.name, False, hash = hash) # store in database
 
 
-
+#TODO: Replace
 def getMostRecentUploads(site):
     rc = site.api('query', list='logevents',type='upload', lenamespace=6, lelimit=50)
     data = set()
     for i in rc['query']['logevents']:
         data.add(site.Pages[i['title']])
     return data
+
 
 def run(site):
     global number_saved
@@ -98,7 +100,7 @@ def run(site):
         print(number_saved)
         text = page.text()
         try:
-            if have_seen_image(page.name):#page.name in pages_run_set:
+            if have_seen_image(site, page.name):#page.name in pages_run_set:
                 print("Found duplicate, no need to check")
                 continue
             process_file(page, site)

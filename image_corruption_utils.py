@@ -128,7 +128,8 @@ def verifyHash(site, local, image_page):
     """
     lhash = getLocalHash(local)
     rhash = getRemoteHash(site, str(image_page.name))
-    return lhash == rhash
+    result = lhash == rhash
+    return [result, rhash]
 
 #TODO: verify functionality
 def getUploaderAndTimestamp(site, filename):

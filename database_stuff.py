@@ -1,6 +1,7 @@
 from __future__ import print_function
 from datetime import date, datetime, timedelta, timezone
 import mysql.connector
+from image_corruption_utils import getRemoteHash
 
 config = {
   'user': 'scott',
@@ -10,13 +11,13 @@ config = {
   'raise_on_warnings': True
 }
 insert_image = ("INSERT INTO images_viewed "
-                "(title, isCorrupt, date_scanned, to_delete_nom) "
-                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s)")
+                "(title, isCorrupt, date_scanned, to_delete_nom, hash) "
+                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s, %(hash)s)")
 
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                 "WHERE to_delete_nom = %s"}
 
-update_entry = {"UPDATE images_viewed SET isCorrupt = %s, to_delete_nom = %s WHERE title = %s"}
+update_entry = {"UPDATE images_viewed SET isCorrupt = %s, to_delete_nom = %s, hash = %s WHERE title = %s"}
 
 def getNextMonth(day_count):
     return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%m/%d/%Y')
@@ -29,7 +30,7 @@ def calculateDifference(date_tagged):
     return (datetime.now(timezone.utc).date() - date_tagged).days
 
 
-def store_image(title, isCorrupt, day_count = 30):
+def store_image(title, isCorrupt, day_count = 30, hash):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
     if isCorrupt:
@@ -38,12 +39,14 @@ def store_image(title, isCorrupt, day_count = 30):
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': getNextMonth(day_count),
+            'hash': str(hash)
         }
     else:
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
+            'hash': str(hash)
         }
     cursor.execute(insert_image, image_data)
     cnx.commit()
@@ -71,20 +74,21 @@ def get_expired_images():
     #return data
 
 
-def have_seen_image(title):
+def have_seen_image(site, title):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    sql = "SELECT title FROM images_viewed WHERE title = %s"
-    cursor.execute(sql, title)
+    getRemoteHash(site, title)
+    sql = "SELECT title FROM images_viewed WHERE title = %s AND hash=%s"
+    cursor.execute(sql, (title, hash))
     msg = cursor.fetchone()
     cnx.close()
     if not msg:
         return False
     return True
 
-def update_entry(title, isCorrupt, to_delete_nom):
+def update_entry(title, isCorrupt, to_delete_nom, hash):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    cursor.execute(update_entry, (isCorrupt, to_delete_nom, title))
+    cursor.execute(update_entry, (isCorrupt, to_delete_nom, hash, title))
     cnx.commit()
     print("Record updated")
