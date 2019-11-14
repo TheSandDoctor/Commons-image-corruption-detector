@@ -15,6 +15,7 @@ import os
 number_saved = 0
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
+#TODO: Convert this to pwb - this will probably simplify the code somewhat
 def save_page(site, page, text, edit_summary, isBotEdit = True, isMinor = True):
     if not call_home(site, "full_scan"):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
