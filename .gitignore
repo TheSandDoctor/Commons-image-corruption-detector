@@ -1,3 +1,6 @@
 .DS_Store
 .idea/
 credentials.txt
+user-config.py
+pywikibot.lwp
+throttle.ctrl
