@@ -4,7 +4,7 @@ import re
 site_pwb = pywikibot.Site("commons", "commons")
 
 def allimages(start="!", prefix="", reverse=False, step=None, total=None, content=False):
-    pages = pywikibot.site.APISite.allimages(
+    pages = site_pwb.allimages(
         site_pwb,
         start=start,
         prefix=prefix,
