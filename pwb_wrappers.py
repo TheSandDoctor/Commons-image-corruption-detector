@@ -15,16 +15,6 @@ def allimages(start="!", prefix="", reverse=False, step=None, total=None, conten
     )
     return pages
 
-def editpage(title, summary, text, minor=True):
-    page = pywikibot.Page(site_pwb, title)
-    page.text = text
-    result = pywikibot.site.APISite.editpage(
-        site_pwb,
-        page=page,
-        summary=summary,
-        minor=minor
-    )
-    return result
 
 def tag_page(filepage, template, summary):
     #Modified version of https://github.com/toolforge/embeddeddata/blob/5ecd31417a4c3c5d1be9c2a58f55a1665d9c767f/worker.py#L361
