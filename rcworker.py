@@ -12,6 +12,7 @@ import pywikibot
 from pywikibot.data.api import APIError
 from pywikibot.throttle import Throttle
 from image_corruption_utils import getLocalHash
+from PIL import Image
 from redis import Redis
 
 def retry_apierror(f):
@@ -105,7 +106,6 @@ def run_worker():
             path = os.path.join(tmpdir, str(uuid.uuid1()))
 
             # Download
-            #TODO: Replace this with PIL
             try:
                 for i in range(8):
                     try:
@@ -121,38 +121,33 @@ def run_worker():
                         site.throttle(write=True)
                 else:
                     pywikibot.warning('FIXME: Download attempt exhausted')
+                    pywikibot.warning('FIXME: Download of ' + str(filename.title() + ' failed. Aborting...'))
+                    continue # move on to the next file
 
-#TODO: Write own continuation
+                del success
+                try:
+                    corrupt_result = image_is_corrupt(filename)
+                except Image.FileFormatError as e:
+                    print("Not an image (or at very least not currently supported by PIL)")
+                    os.remove(filename)    # file not an image
+                    # Previously the idea was to just raise the error,
+                    # but since this is a constant running loop, just move on
+                    # to the next file (once local removed)
+                    continue
 
-
-
-
-                res = detect(path)
-                if res:
-                    msg = []
-                    for item in res:
-                        if item['middleware']:
-                            pos = item['middleware']
-                        else:
-                            pos = '%s (%s bytes, via %s)' % (
-                                sizeof_fmt(item['pos']),
-                                item['pos'],
-                                ','.join(item['via']))
-                            if not item['posexact']:
-                                pos = 'about ' + pos
-
-                        if item['mime'][0] in UNKNOWN_TYPES:
-                            mime = 'Unidentified type (%s, %s)' % item['mime']
-                        else:
-                            mime = 'Identified type: %s (%s)' % item['mime']
-                        msg.append('After %s: %s' % (pos, mime))
-                    msg = '; '.join(msg)
-
-                    pywikibot.output(u"\n\n>>> %s <<<"
-                                     % filepage.title(asLink=True))
-                    pywikibot.output(msg)
-
-                    execute_file(filepage, revision, msg, res, path)
+                hash = str(change['log_params']['img_sha1'])
+                if corrupt_result:
+                    text = pwb_wrappers.tag_page(filepage, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}",
+                        "Image detected as corrupt, tagging.")
+                    store_image(filepage.title(), True, hash = hash) # store in database
+                    print("Saved page and logged in database")
+                    # Notify the user that the file needs updating
+                    try: #TODO: Add record to database about successful notification?
+                        notifyUser_PWB(site, filepage, "30 days", "monitor")
+                    except: #TODO: Add record to database about failed notification?
+                        print("ERROR: Could not notify user about " + str(filepage.title()) + " being corrupt.")
+                else: # image not corrupt
+                    store_image(filepage.title(), False, hash = hash) # store in database
 
             except Exception:
                 traceback.print_exc()
