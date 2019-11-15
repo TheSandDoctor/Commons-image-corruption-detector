@@ -68,11 +68,8 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     # Download image
     while True:
         with open("./Example3" + ext,"wb") as fd:
-            try:
-                image_page.download(fd)
-            except FileFormatError:
-                os.remove("./Example3" + ext)    # file not an image.
-                raise
+            image_page.download(fd)
+
         hashResult, hash = verifyHash(site, "./Example2" + ext, image_page)
         if not hashResult:
             if download_attempts => 10:
@@ -87,7 +84,11 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     del download_attempts
 
     with open("./Example3" + ext, "rb") as f:
-        result = image_is_corrupt(f)
+        try:
+            result = image_is_corrupt(f)
+        except FileFormatError:
+            os.remove("./Example3" + ext)    # file not an image.
+            raise
     del ext # no longer a needed variable
     if result: # image corrupt
         try: #TODO: Add record to database about successful notification?

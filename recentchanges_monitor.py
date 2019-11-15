@@ -48,11 +48,8 @@ def process_file(image_page, site):
     # Download image
     while True:
         with open("./Example2" + ext,"wb") as fd:
-            try:
-                image_page.download(fd)
-            except FileFormatError:
-                os.remove("./Example2" + ext)    # file not an image.
-                raise
+            image_page.download(fd)
+
         hashResult, hash = verifyHash(site, "./Example2" + ext, image_page)
         if not hashResult:
             if download_attempts => 10:
@@ -67,7 +64,11 @@ def process_file(image_page, site):
     del download_attempts
     # Read and check if valid
     with open("./Example2" + ext, "rb") as f:
-        result = image_is_corrupt(f) #TODO: Add logic to tag page
+        try:
+            result = image_is_corrupt(f) #TODO: Add logic to tag page
+        except FileFormatError:
+            os.remove("./Example2" + ext)    # file not an image.
+            raise
     del ext # no longer a needed variable
     if result: # image corrupt
         text = tag_page(image_page, site, "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" + datetime.now(timezone.utc).strftime("%Y-%m-%d") + "}}")
