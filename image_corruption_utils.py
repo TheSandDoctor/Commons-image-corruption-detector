@@ -115,11 +115,21 @@ def notifyUser_PWB(site, image, time_duration, task_name):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
     user, timestamp = getUploaderAndTimestamp_PWB(site, image)
     tp = pywikibot.Page(site, "User talk:" + user]
-    msg = "Hello " + user + ", it appears that the version of [[" + str(image.title()) + "]] which you uploaded " + timestamp
-    msg += " is broken or corrupt. Please review the image and attempt to correct this issue by uploading a new version of the file. [[User:TheSandBot|TheSandBot]] will re-review this image again in " + time_duration
-    msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
+    if task_name == 'full_scan' or task_name == 'monitor':
+        msg = "Hello " + user + ", it appears that the version of [[" + str(image.title()) + "]] which you uploaded " + timestamp
+        msg += " is broken or corrupt. Please review the image and attempt to correct this issue by uploading a new version of the file. [[User:TheSandBot|TheSandBot]] will re-review this image again in " + time_duration
+        msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
 
-    summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
+        summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
+        print("Notification of corruption of " + str(image.title())))
+    else: # if task_name == 'followup':
+        msg = "Hello " + str(user) + ", this message is to notify you that "
+        msg += str(image.title()) + " has been nominated for [[Commons:CSD|speedy deletion]] "
+        msg += "as it is still corrupt after the " + str(day_count) + " day grace period."
+        #userTP.append(msg,summary="Notify about corrupt image [[" + str(image.title()) + "]]", bot=True, minor=False, section='new')
+        summary = "Notify about corrupt image [[" + str(image.title()) + "]]" + " nomination for [[Commons:CSD|speedy deletion]]"
+        print("Notification of CSD nomination of " + str(image.title()))
+
     retry_apierror(
         lambda:
         filepage.save(appendtext=msg, section=new, #FIXME: appendtext and section=new surely don't play together(?)
