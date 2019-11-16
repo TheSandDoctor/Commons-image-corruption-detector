@@ -15,7 +15,7 @@ def allimages(start="!", prefix="", reverse=False, step=None, total=None, conten
     return pages
 
 
-def tag_page(filepage, template, summary):
+def tag_page(filepage, template, summary, minor = True):
     #Modified version of https://github.com/toolforge/embeddeddata/blob/5ecd31417a4c3c5d1be9c2a58f55a1665d9c767f/worker.py#L361
     filepage.clear_cache()
 
@@ -27,7 +27,7 @@ def tag_page(filepage, template, summary):
     retry_apierror(
         lambda:
         filepage.save(prependtext=template + '\n',
-                      summary=summary, minor=True, botflag=True, force=True)
+                      summary=summary, minor=minor, botflag=True, force=True)
     )
 
 def retry_apierror(f):
