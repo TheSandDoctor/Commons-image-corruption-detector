@@ -16,6 +16,9 @@ import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathl
 from image_corruption_utils import *
 import mysql.connector
 from database_stuff import have_seen_image, get_expired_images
+import pywikibot
+import pwb_wrappers
+from image_corruption_utils import notifyUser_PWB
 
 def tagForDeletion(site, page, day_count):
 """
@@ -60,6 +63,61 @@ def notify_and_tag_for_deletion(site, page, username, day_count):
             print('Could not edit [[User talk:' + user[0] + ']] and notify due to protection')
             break
 
+def notifyTag(site, filepage, days):
+    pwb_wrappers.tag_page(filepage, "{{SD|Corrupt image that has not been resolved in " + str(days) + "}}", "Nominating corrupt file for deletion - passed " + str(days) + " day grace period.", minor=False)
+    notifyUser_PWB(site, filepage, days, 'followup', day_count = days)
+
+def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
+    image_page = pywikibot.Page(site, image)
+    text = failed = hash = None
+    _, ext = os.path.splitext(image_page.title())    # get filetype
+    download_attempts = 0
+    while True:
+        with open("./Example3" + ext, "wb") as fd:
+            image_page.download(fd)
+
+        hashResult, hash = verifyHash(site, "./Example3" + ext, image_page)
+        if not hashResult:
+            if download_attempts => 10:
+                failed = 1
+                break
+            download_attempts += 1
+            continue
+        else:
+            break
+    if failed:
+        raise ValueError("Hash check failed for " + "./Example3" + ext + " vs " + str(image_page.name) + " " + download_attempts + " times. Aborting...")
+    del download_attempts
+    with open("./Example3" + ext, "rb") as f:
+        try:
+            result = image_is_corrupt(f)
+        except FileFormatError:
+            os.remove("./Example3" + ext)    # file not an image.
+            raise
+    del ext # no longer a needed variable
+    if result: # image corrupt
+        try: #TODO: Add record to database about successful notification?
+            notifyTag(site, image_page, calculateDifference(date_scanned))
+            #notify_and_tag_for_deletion(site, image_page, username, calculateDifference(date_scanned))
+        except: #TODO: Add record to database about failed notification?
+            pass
+    else: # image not corrupt
+        edit_summary = "Removing [[Template:TSB image identified corrupt]] - image no longer corrupt"
+
+
+        code = mwparserfromhell.parse(image_page.text())
+        for template in code.filter_templates():
+            if template.name.matches("Template:User:TheSandDoctor/Template:TSB image identified corrupt"):
+                code.remove(template) # template no longer needed
+        pwb_wrappers.retry_apierror(
+            lambda:
+            image_page.save(text=str(code),
+                          summary=summary, minor=minor, botflag=True, force=True)
+        )
+        # update database entry to set image as no longer corrupt and nullify to_delete_nom
+        update_entry(str(image_page.title()), False, "NULL", hash)
+
+
 def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     image_page = site.Pages[image]
     text = failed = hash = None
@@ -70,7 +128,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
         with open("./Example3" + ext,"wb") as fd:
             image_page.download(fd)
 
-        hashResult, hash = verifyHash(site, "./Example2" + ext, image_page)
+        hashResult, hash = verifyHash(site, "./Example3" + ext, image_page)
         if not hashResult:
             if download_attempts => 10:
                 failed = 1
@@ -117,6 +175,14 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                         break
             break # end for
 
+def main_PWB():
+    site = pywikibot.Site('commons', 'commons', user='TheSandBot')
+    lresult = site.login()
+    if not lresult:
+        raise ValueError('Incorrect password')
+    raw = get_expired_images()
+    for i in raw:
+        run_PWB(site, i[0], i[1], i[2], i[3])
 
 def main():
     site = mwclient.Site(('https', 'commons.wikimedia.org'), '/w/')
