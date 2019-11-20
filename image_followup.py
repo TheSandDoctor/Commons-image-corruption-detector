@@ -20,6 +20,7 @@ import pywikibot
 import pwb_wrappers
 from image_corruption_utils import notifyUser_PWB
 
+
 def tagForDeletion(site, page, day_count):
 """
 Tags pages for deletion and takes the following parameters:
@@ -30,6 +31,7 @@ Tags pages for deletion and takes the following parameters:
     text = "{{SD|Corrupt image that has not been resolved in "
     text += str(day_count) + "}}\n" + text
     return text
+
 
 def notify_and_tag_for_deletion(site, page, username, day_count):
     while True:
@@ -63,9 +65,11 @@ def notify_and_tag_for_deletion(site, page, username, day_count):
             print('Could not edit [[User talk:' + user[0] + ']] and notify due to protection')
             break
 
+
 def notifyTag(site, filepage, days):
     pwb_wrappers.tag_page(filepage, "{{SD|Corrupt image that has not been resolved in " + str(days) + "}}", "Nominating corrupt file for deletion - passed " + str(days) + " day grace period.", minor=False)
     notifyUser_PWB(site, filepage, days, 'followup', day_count = days)
+
 
 def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
     image_page = pywikibot.Page(site, image)
@@ -175,6 +179,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                         break
             break # end for
 
+
 def main_PWB():
     site = pywikibot.Site('commons', 'commons', user='TheSandBot')
     lresult = site.login()
@@ -183,6 +188,7 @@ def main_PWB():
     raw = get_expired_images()
     for i in raw:
         run_PWB(site, i[0], i[1], i[2], i[3])
+
 
 def main():
     site = mwclient.Site(('https', 'commons.wikimedia.org'), '/w/')
@@ -197,6 +203,7 @@ def main():
     raw = get_expired_images()
     for i in raw:
         run(site, i[0], i[1], i[2], i[3])
+
 
 if __name__ == '__main__':
     #main()
