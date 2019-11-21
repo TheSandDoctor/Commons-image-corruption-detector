@@ -12,11 +12,10 @@
 
 from __future__ import absolute_import
 
-import traceback, mwparserfromhell, sys, re, configparser, json, pathlib, os
+import mwparserfromhell, os
 from image_corruption_utils import *
 from PIL import FileFormatError
-import mysql.connector
-from database_stuff import have_seen_image, get_expired_images, calculateDifference, update_entry
+from database_stuff import get_expired_images, calculateDifference, update_entry
 import pywikibot
 import pwb_wrappers
 from image_corruption_utils import notifyUser_PWB
@@ -31,7 +30,7 @@ def notify_and_tag(site, filepage, days):
 
 def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     image_page = pywikibot.Page(site, image)  # does this need to be FilePage?
-    text = failed = hash = None
+    text = failed = img_hash = None
     _, ext = os.path.splitext(image_page.title())  # get filetype
     download_attempts = 0
     if not image_page.exists():
@@ -41,8 +40,8 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
         with open("./Example3" + ext, "wb") as fd:
             image_page.download(fd)
 
-        hashResult, hash = verifyHash(site, "./Example3" + ext, image_page)
-        if not hashResult:
+        hash_result, img_hash = verifyHash(site, "./Example3" + ext, image_page)
+        if not hash_result:
             if download_attempts >= 10:
                 failed = 1
                 break
@@ -72,7 +71,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     else:  # image not corrupt
         edit_summary = "Removing [[Template:TSB image identified corrupt]] - image no longer corrupt"
 
-        code = mwparserfromhell.parse(image_page.text())
+        code = mwparserfromhell.parse(image_page.text)
         for template in code.filter_templates():
             if template.name.matches("Template:User:TheSandDoctor/Template:TSB image identified corrupt"):
                 code.remove(template)  # template no longer needed
@@ -82,7 +81,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                             summary=edit_summary, minor=False, botflag=True, force=True)
         )
         # update database entry to set image as no longer corrupt and nullify to_delete_nom
-        update_entry(str(image_page.title()), False, "NULL", hash)
+        update_entry(str(image_page.title()), False, "NULL", img_hash)
 
 
 def main():
