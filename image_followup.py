@@ -12,7 +12,7 @@
 
 from __future__ import absolute_import
 
-import traceback, mwclient, mwparserfromhell, sys, re, configparser, json, pathlib
+import traceback, mwparserfromhell, sys, re, configparser, json, pathlib, os
 from image_corruption_utils import *
 import mysql.connector
 from database_stuff import have_seen_image, get_expired_images
@@ -21,57 +21,12 @@ import pwb_wrappers
 from image_corruption_utils import notifyUser_PWB
 
 
-def tagForDeletion(site, page, day_count):
-    """
-    Tags pages for deletion and takes the following parameters:
-        site: site object
-        page: page object
-    """
-    text = page.text()
-    text = "{{SD|Corrupt image that has not been resolved in "
-    text += str(day_count) + "}}\n" + text
-    return text
-
-
-def notify_and_tag_for_deletion(site, page, username, day_count):
-    while True:
-        try:
-            msg = tagForDeletion(site, page, day_count)
-            edit_summary = "Nominating corrupt file for deletion - passed " + str(day_count) + " day grace period."
-            page.save(msg,summary=edit_summary, bot=True, minor=False)
-            break
-        except [[EditError]]:
-            print("Error")
-            #time = 1
-            sleep(5) # sleep for 5 seconds before trying again
-            continue
-        except [[ProtectedPageError]]:
-            print('Could not edit to nominate ' + str(page.name)  + ' due to protection')
-            break
-    userTP = site.Pages["User talk:" + str(username)]
-    while True:
-        try:
-            msg = "Hello " + str(username) + ", this message is to notify you that "
-            msg += str(page.name) + " has been nominated for [[Commons:CSD|speedy deletion]] "
-            msg += "as it is still corrupt after the " + str(day_count) + " day grace period."
-            userTP.append(msg,summary="Notify about corrupt image [[" + str(image.name) + "]]", bot=True, minor=False, section='new')
-            print("Notification of CSD nomination of " + str(image.name))
-            break
-        except [[EditError]]:
-            print("Error")
-            sleep(5)
-            continue
-        except [[ProtectedPageError]]:
-            print('Could not edit [[User talk:' + user[0] + ']] and notify due to protection')
-            break
-
-
 def notify_and_tag(site, filepage, days):
     pwb_wrappers.tag_page(filepage, "{{SD|Corrupt image that has not been resolved in " + str(days) + "}}", "Nominating corrupt file for deletion - passed " + str(days) + " day grace period.", minor=False)
     notifyUser_PWB(site, filepage, days, 'followup', day_count = days)
 
 
-def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
+def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     image_page = pywikibot.Page(site, image) # does this need to be FilePage?
     text = failed = hash = None
     _, ext = os.path.splitext(image_page.title())    # get filetype
@@ -125,14 +80,14 @@ def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
         update_entry(str(image_page.title()), False, "NULL", hash)
 
 
-def main_PWB():
+def main():
     site = pywikibot.Site('commons', 'commons', user='TheSandBot')
     login_result = site.login()
     if not login_result:
         raise ValueError('Incorrect password')
     raw = get_expired_images()
     for i in raw:
-        run_PWB(site, i[0], i[1], i[2], i[3])
+        run(site, i[0], i[1], i[2], i[3])
 
 if __name__ == '__main__':
     #main()
