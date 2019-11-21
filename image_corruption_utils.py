@@ -1,13 +1,23 @@
+
 from PIL import Image
 from PIL import ImageFile
+from pywikibot import UnicodeType
+import json
 import mysql.connector
 import hashlib
 import pywikibot
 from pwb_wrappers import retry_apierror
 ImageFile.MAXBLOCK = 1
 
-# Check if image is corrupt. If an image is corrupt, it will fail .tobytes()
 def image_is_corrupt(f):
+    """
+    Check if image is corrupt. If an image is corrupt, it will fail .tobytes().
+    It is also important to note that this will also fail if the file at hand is *not* an image. This is mitigated
+    by the custom implementation of FileFormatError to catch this specific case.
+    :param f: path/name of file to check if corrupt
+    :return: True if corrupt, False if valid
+    :raise FileFormatError if not a valid image
+    """
     try:
         image = Image.open(f)
         image.tobytes()
@@ -22,14 +32,18 @@ def image_is_corrupt(f):
         return True
 
 def getLocalHash(filename):
-    """"This function returns the SHA-1 hash
-   of the file passed into it
-   Retrieved from https://www.programiz.com/python-programming/examples/hash-file
-   2019-11-07"""
+    """
+    This function returns the SHA-1 hash
+    of the file passed into it
+    Retrieved from https://www.programiz.com/python-programming/examples/hash-file
+    2019-11-07
+    :param filename: Local file name/path to open
+    :return: hex representation of digest (SHA1)
+    """
 
-   h = hashlib.sha1() # make hash object
-   # open file for reading in binary mode
-   with open(filename, 'rb') as file:
+    h = hashlib.sha1() # make hash object
+    # open file for reading in binary mode
+    with open(filename, 'rb') as file:
        # loop till the end of the file
        chunk = 0
        while chunk != b'':
@@ -37,24 +51,34 @@ def getLocalHash(filename):
            chuck = file.read(1024)
            h.update(chuck)
 
-   # return the hex representation of digest
-   return h.hexdigest()
+    # return the hex representation of digest
+    return h.hexdigest()
 
 def getRemoteHash_PWB(site, filename):
-    # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2633
+    """
+    Get remote hash from Wikimedia Commons.
+
+    Adapted from
+    https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2633
+
+    :param site: site object
+    :param filename: name of file to get remote hash of (string)
+    :return: sha1 hash (string)
+    """
     fp = pywikibot.FilePage(site, filename)
     return str(fp.latest_file_info.sha1)
 
 def getRemoteHash(site, filename):
     """
-        Fetch remote hash from the mediawiki API.
-        This method returns a sha1 hash in the form of a string.
-        Parameters:
-            site: site object
-            filename: file name to get the remote hash from (string)
-        Returns: sha1 hash (as a string)
+    Fetch remote hash from the mediawiki API.
+
+    An example of this in use:
+    https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&format=json&prop=imageinfo&titles=File%3ASalda%C3%B1a%20-%20015%20(26238038617).jpg&iiprop=timestamp%7Cuser%7Csha1
+    :param site: site object
+    :param filename: file name to get the remote hash from (string)
+    :return: sha1 hash in the form of a string.
     """
-    # https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&format=json&prop=imageinfo&titles=File%3ASalda%C3%B1a%20-%20015%20(26238038617).jpg&iiprop=timestamp%7Cuser%7Csha1
+    #
     result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
     pageid = sha = None
     for i in result['query']['pages']:
@@ -67,12 +91,11 @@ def getRemoteHash(site, filename):
 
 def verifyHash(site, local, image_page):
     """
-        Verifies that two given hashes match.
-        Parameters:
-            site: site object
-            local: local filename
-            image_page: image page object
-        Returns: True if match, False if not
+    Verifies that two given hashes match.
+    :param site: site object
+    :param local: local file path/name
+    :param image_page: image page object
+    :return: True if match, False if not
     """
     lhash = getLocalHash(local)
     rhash = getRemoteHash(site, str(image_page.name))
@@ -88,16 +111,14 @@ def getUploaderAndTimestamp_PWB(site, filename):
 #TODO: verify functionality
 def getUploaderAndTimestamp(site, filename):
     """
-        Get most recent file uploader and timestamp of that upload. This method
-        may potentially throw an error due to issues with the mediawiki software itself
-        it is unclear and unforeseeable what the specific errors may be at this time,
-        it is just a distinct possibility. As such, this method should _always_ be wrapped in
-        a try/except statement.
-
-        Parameters:
-            site: site object
-            filename: filename to fetch the information of (string)
-        Returns: [user, timestamp] list (user and timestamp both strings)
+    Get most recent file uploader and timestamp of that upload. This method
+    may potentially throw an error due to issues with the mediawiki software itself
+    it is unclear and unforeseeable what the specific errors may be at this time,
+    it is just a distinct possibility. As such, this method should _always_ be wrapped in
+    a try/except statement.
+    :param site: site object
+    :param filename: filename to fetch the information of (string)
+    :return: [user, timestamp] list (user and timestamp both strings)
     """
     result = site.api('query', prop = 'imageinfo', iiprop = 'timestamp|user|sha1', titles=filename)
     pageid = user = timestamp = None
@@ -115,7 +136,7 @@ def notifyUser_PWB(site, image, time_duration, task_name, minor = True, day_coun
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
         
     user, timestamp = getUploaderAndTimestamp_PWB(site, image)
-    tp = pywikibot.Page(site, "User talk:" + user]
+    tp = pywikibot.Page(site, "User talk:" + user)
     if task_name == 'full_scan' or task_name == 'monitor':
         msg = "{{subst:TSB corruption notification|user=" + str(user) + "|file=" + str(image.title()) + "|time=" + str(timestamp)
         msg += "|time_duration=" + str(time_duration) + "}}"
@@ -137,7 +158,7 @@ def notifyUser_PWB(site, image, time_duration, task_name, minor = True, day_coun
 
     retry_apierror(
         lambda:
-        filepage.save(appendtext=msg, section=new, #FIXME: appendtext and section=new surely don't play together(?)
+        tp.save(appendtext=msg, section='new', #FIXME: appendtext and section=new surely don't play together(?)
                       summary=summary, minor=minor, botflag=True, force=True)
     )
 
