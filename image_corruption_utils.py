@@ -53,7 +53,6 @@ def getLocalHash(filename):
             chuck = file.read(1024)
             h.update(chuck)
 
-    # return the hex representation of digest
     return h.hexdigest()
 
 
@@ -87,6 +86,13 @@ def verifyHash(site, local, image_page):
 
 
 def getUploaderAndTimestamp(site, filename):
+    """
+    Get uploader and timestamp of file upload.
+    From https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2634
+    :param site: site object
+    :param filename: filename to get uploader and timestamp from (string)
+    :return: [user, timestamp] - user (string), timestamp (iso format)
+    """
     # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2634
     fp = pywikibot.FilePage(site, filename)
     return [str(fp.latest_file_info.user),
@@ -94,6 +100,17 @@ def getUploaderAndTimestamp(site, filename):
 
 
 def notifyUser(site, image, time_duration, task_name, minor=True, day_count=None):
+    """
+    Notify user of corruption (if task_name = 'full_scan' or 'monitor') or of tagging for deletion
+    (if parameter anything else).
+    :param site: site object
+    :param image: image page object
+    :param time_duration: duration of grace period (string)
+    :param task_name: name of task (used to determine message type left) (string)
+    :param minor: whether or not edit is minor (default True)
+    :param day_count: passed number of days in grace period (string, default:None)
+    :return: None
+    """
     if not call_home(site, task_name):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
 
@@ -118,6 +135,12 @@ def notifyUser(site, image, time_duration, task_name, minor=True, day_count=None
 
 
 def call_home(site_obj, key):
+    """
+    "Call home" to double check that we are still allowed to edit.
+    :param site_obj: site object
+    :param key: subsection key
+    :return: whether or not we can keep editing
+    """
     page = pywikibot.Page(site_obj, 'User:TheSandBot/status')
     text = page.text
     data = json.loads(text)["run"]["corrupt_image_finder"][key]
