@@ -22,11 +22,11 @@ from image_corruption_utils import notifyUser_PWB
 
 
 def tagForDeletion(site, page, day_count):
-"""
-Tags pages for deletion and takes the following parameters:
-    site: site object
-    page: page object
-"""
+    """
+    Tags pages for deletion and takes the following parameters:
+        site: site object
+        page: page object
+    """
     text = page.text()
     text = "{{SD|Corrupt image that has not been resolved in "
     text += str(day_count) + "}}\n" + text
@@ -66,16 +66,19 @@ def notify_and_tag_for_deletion(site, page, username, day_count):
             break
 
 
-def notifyTag(site, filepage, days):
+def notify_and_tag(site, filepage, days):
     pwb_wrappers.tag_page(filepage, "{{SD|Corrupt image that has not been resolved in " + str(days) + "}}", "Nominating corrupt file for deletion - passed " + str(days) + " day grace period.", minor=False)
     notifyUser_PWB(site, filepage, days, 'followup', day_count = days)
 
 
 def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
-    image_page = pywikibot.Page(site, image)
+    image_page = pywikibot.Page(site, image) # does this need to be FilePage?
     text = failed = hash = None
     _, ext = os.path.splitext(image_page.title())    # get filetype
     download_attempts = 0
+    if not image_page.exists():
+        raise ValueError("Image does not exist.") # confirm this is the expected behaviour T10
+
     while True:
         with open("./Example3" + ext, "wb") as fd:
             image_page.download(fd)
@@ -101,7 +104,7 @@ def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
     del ext # no longer a needed variable
     if result: # image corrupt
         try: #TODO: Add record to database about successful notification?
-            notifyTag(site, image_page, calculateDifference(date_scanned))
+            notify_and_tag(site, image_page, calculateDifference(date_scanned))
             #notify_and_tag_for_deletion(site, image_page, username, calculateDifference(date_scanned))
         except: #TODO: Add record to database about failed notification?
             pass
@@ -122,88 +125,14 @@ def run_PWB(site, image, isCorrupt, date_scanned, to_delete_nom):
         update_entry(str(image_page.title()), False, "NULL", hash)
 
 
-def run(site, image, isCorrupt, date_scanned, to_delete_nom):
-    image_page = site.Pages[image]
-    text = failed = hash = None
-    _, ext = os.path.splitext(image_page.page_title)    # get filetype
-    download_attempts = 0
-    # Download image
-    while True:
-        with open("./Example3" + ext,"wb") as fd:
-            image_page.download(fd)
-
-        hashResult, hash = verifyHash(site, "./Example3" + ext, image_page)
-        if not hashResult:
-            if download_attempts => 10:
-                failed = 1
-                break
-            download_attempts += 1
-            continue
-        else:
-            break
-    if failed:
-        raise ValueError("Hash check failed for " + "./Example3" + ext + " vs " + str(image_page.name) + " " + download_attempts + " times. Aborting...")
-    del download_attempts
-
-    with open("./Example3" + ext, "rb") as f:
-        try:
-            result = image_is_corrupt(f)
-        except FileFormatError:
-            os.remove("./Example3" + ext)    # file not an image.
-            raise
-    del ext # no longer a needed variable
-    if result: # image corrupt
-        try: #TODO: Add record to database about successful notification?
-            notify_and_tag_for_deletion(site, image_page, username, calculateDifference(date_scanned))
-        except: #TODO: Add record to database about failed notification?
-            pass
-    else: # image not corrupt
-        edit_summary = "Removing [[Template:TSB image identified corrupt]] - image no longer corrupt"
-
-        while True:
-            code = mwparserfromhell.parse(image_page.text())
-            for template in code.filter_templates():
-                if template.name.matches("Template:User:TheSandDoctor/Template:TSB image identified corrupt"):
-                    code.remove(template) # template no longer needed
-                    try:
-                        image_page.save(text, summary=edit_summary, bot=True, minor=True)
-                        # update database entry to set image as no longer corrupt and nullify to_delete_nom
-                        update_entry(str(image_page.name), False, "NULL", hash)
-                        break
-                    except errors.EditError:
-                        print("Error")
-                        sleep(5)   # sleep for 5 seconds before trying again
-                        continue
-                    except errors.ProtectedPageError:
-                        print('Could not edit ' + page.page_title + ' due to protection')
-                        break
-            break # end for
-
-
 def main_PWB():
     site = pywikibot.Site('commons', 'commons', user='TheSandBot')
-    lresult = site.login()
-    if not lresult:
+    login_result = site.login()
+    if not login_result:
         raise ValueError('Incorrect password')
     raw = get_expired_images()
     for i in raw:
         run_PWB(site, i[0], i[1], i[2], i[3])
-
-
-def main():
-    site = mwclient.Site(('https', 'commons.wikimedia.org'), '/w/')
-    config = configparser.RawConfigParser()
-    config.read('credentials.txt')
-    try:
-        site.login(config.get('enwiki_sandbot', 'username'), config.get('enwiki_sandbot', 'password'))
-    except errors.LoginError as e:
-        print(e)
-        raise ValueError("Login failed")
-
-    raw = get_expired_images()
-    for i in raw:
-        run(site, i[0], i[1], i[2], i[3])
-
 
 if __name__ == '__main__':
     #main()
