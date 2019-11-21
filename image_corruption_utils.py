@@ -1,4 +1,3 @@
-
 from PIL import Image
 from PIL import ImageFile
 from pywikibot import UnicodeType
@@ -7,7 +6,9 @@ import mysql.connector
 import hashlib
 import pywikibot
 from pwb_wrappers import retry_apierror
+
 ImageFile.MAXBLOCK = 1
+
 
 def image_is_corrupt(f):
     """
@@ -27,9 +28,10 @@ def image_is_corrupt(f):
         print("Not an image")
         raise
     except Exception as e2:
-        print("Corrupt\n") # If we get this far, image is corrupt
-        #print(e)
+        print("Corrupt\n")  # If we get this far, image is corrupt
+        # print(e)
         return True
+
 
 def getLocalHash(filename):
     """
@@ -41,18 +43,19 @@ def getLocalHash(filename):
     :return: hex representation of digest (SHA1)
     """
 
-    h = hashlib.sha1() # make hash object
+    h = hashlib.sha1()  # make hash object
     # open file for reading in binary mode
     with open(filename, 'rb') as file:
-       # loop till the end of the file
-       chunk = 0
-       while chunk != b'':
-           # read only 1024 bytes at a time
-           chuck = file.read(1024)
-           h.update(chuck)
+        # loop till the end of the file
+        chunk = 0
+        while chunk != b'':
+            # read only 1024 bytes at a time
+            chuck = file.read(1024)
+            h.update(chuck)
 
     # return the hex representation of digest
     return h.hexdigest()
+
 
 def getRemoteHash(site, filename):
     """
@@ -68,6 +71,7 @@ def getRemoteHash(site, filename):
     fp = pywikibot.FilePage(site, filename)
     return str(fp.latest_file_info.sha1)
 
+
 def verifyHash(site, local, image_page):
     """
     Verifies that two given hashes match.
@@ -81,40 +85,36 @@ def verifyHash(site, local, image_page):
     result = lhash == rhash
     return [result, rhash]
 
+
 def getUploaderAndTimestamp(site, filename):
     # https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2634
     fp = pywikibot.FilePage(site, filename)
     return [str(fp.latest_file_info.user),
-                UnicodeType(fp.latest_file_info.timestamp.isoformat())]
+            UnicodeType(fp.latest_file_info.timestamp.isoformat())]
 
 
-def notifyUser(site, image, time_duration, task_name, minor = True, day_count = None):
+def notifyUser(site, image, time_duration, task_name, minor=True, day_count=None):
     if not call_home(site, task_name):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
-        
+
     user, timestamp = getUploaderAndTimestamp(site, image)
     tp = pywikibot.Page(site, "User talk:" + user)
     if task_name == 'full_scan' or task_name == 'monitor':
-        msg = "{{subst:TSB corruption notification|user=" + str(user) + "|file=" + str(image.title()) + "|time=" + str(timestamp)
+        msg = "{{subst:TSB corruption notification|user=" + str(user) + "|file=" + str(image.title()) + "|time=" + str(
+            timestamp)
         msg += "|time_duration=" + str(time_duration) + "}}"
-        #msg = "Hello " + user + ", it appears that the version of [[" + str(image.title()) + "]] which you uploaded " + timestamp
-        #msg += " is broken or corrupt. Please review the image and attempt to correct this issue by uploading a new version of the file. [[User:TheSandBot|TheSandBot]] will re-review this image again in " + time_duration
-        #msg += " if it is not resolved by then, the file will be [[Commons:CSD|nominated for deletion]] automatically."
 
         summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
-        print("Notification of corruption of " + str(image.title())))
-    else: # if task_name == 'followup':
-        msg = "{{TSB corruption CSD notification|user=" + str(user) + "|file=" + str(image.title()) + "|time_duration=" + str(day_count) + "}}"
+        print("Notification of corruption of " + str(image.title()))
+    else:  # if task_name == 'followup':
+        msg = "{{TSB corruption CSD notification|user=" + str(user) + "|file=" + str(
+            image.title()) + "|time_duration=" + str(day_count) + "}}"
         summary = "Nominating corrupt file for deletion - passed " + str(day_count) + " day grace period."
-        #msg = "Hello " + str(user) + ", this message is to notify you that "
-        #msg += str(image.title()) + " has been nominated for [[Commons:CSD|speedy deletion]] "
-        #msg += "as it is still corrupt after the " + str(day_count) + " day grace period."
-        #userTP.append(msg,summary="Notify about corrupt image [[" + str(image.title()) + "]]", bot=True, minor=False, section='new')
-        #summary = "Notify about corrupt image [[" + str(image.title()) + "]]" + " nomination for [[Commons:CSD|speedy deletion]]"
         print("Notification of CSD nomination of " + str(image.title()))
 
         # FIXME: appendtext and section=new surely don't play together(?)
-        retry_apierror(lambda:tp.save(appendtext=msg, section='new',summary=summary, minor=minor, botflag=True, force=True))
+        retry_apierror(
+            lambda: tp.save(appendtext=msg, section='new', summary=summary, minor=minor, botflag=True, force=True))
 
 
 def call_home(site_obj, key):
