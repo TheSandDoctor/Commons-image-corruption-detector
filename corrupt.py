@@ -62,7 +62,7 @@ def process_file(image_page, site):
                                      datetime.now(
                                          timezone.utc).strftime("%Y-%m-%d") + "}}",
                                      "Image detected as corrupt, tagging.")
-        store_image(image_page.title(), True, hash=img_hash)  # store in database
+        store_image(image_page.title(), True, img_hash=img_hash)  # store in database
         print("Saved page and logged in database")
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
@@ -70,7 +70,7 @@ def process_file(image_page, site):
         except:  # TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
     else:  # image not corrupt
-        store_image(image_page.title(), False, hash=img_hash)  # store in database
+        store_image(image_page.title(), False, img_hash=img_hash)  # store in database
 
 
 def run(utils):

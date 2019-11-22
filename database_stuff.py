@@ -30,7 +30,7 @@ def calculateDifference(date_tagged):
     return (datetime.now(timezone.utc).date() - date_tagged).days
 
 
-def store_image(title, isCorrupt, day_count = 30, hash):
+def store_image(title, isCorrupt, img_hash, day_count=30):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
     if isCorrupt:
@@ -39,18 +39,18 @@ def store_image(title, isCorrupt, day_count = 30, hash):
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': getNextMonth(day_count),
-            'hash': str(hash)
+            'hash': str(img_hash)
         }
     else:
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
-            'hash': str(hash)
+            'hash': str(img_hash)
         }
     cursor.execute(insert_image, image_data)
     cnx.commit()
-    print(mycursor.rowcount, "record inserted.")
+    print(cursor.rowcount, "record inserted.")
     cnx.close()
 
 
@@ -77,18 +77,19 @@ def get_expired_images():
 def have_seen_image(site, title):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    hash = getRemoteHash(site, title)
+    img_hash = getRemoteHash(site, title)
     sql = "SELECT title FROM images_viewed WHERE title = %s AND hash=%s"
-    cursor.execute(sql, (title, hash))
+    cursor.execute(sql, (title, img_hash))
     msg = cursor.fetchone()
     cnx.close()
-    if not msg:
-        return False
-    return True
+    return not msg
+    # if not msg:
+    #    return False
+    # return True
 
-def update_entry(title, isCorrupt, to_delete_nom, hash):
+def update_entry(title, isCorrupt, to_delete_nom, img_hash):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    cursor.execute(update_entry, (isCorrupt, to_delete_nom, hash, title))
+    cursor.execute(update_entry, (isCorrupt, to_delete_nom, img_hash, title))
     cnx.commit()
     print("Record updated")

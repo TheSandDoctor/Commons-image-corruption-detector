@@ -149,7 +149,7 @@ def run_worker():
                                                  + datetime.now(
                                                      datetime.timezone.utc).strftime("%Y-%m-%d") + "}}",
                                                  "Image detected as corrupt, tagging.")
-                    store_image(filepage.title(), True, hash=img_hash)  # store in database
+                    store_image(filepage.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     print("Saved page and logged in database")
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
@@ -157,7 +157,7 @@ def run_worker():
                     except:  # TODO: Add record to database about failed notification?
                         print("ERROR: Could not notify user about " + str(filepage.title()) + " being corrupt.")
                 else:  # image not corrupt
-                    store_image(filepage.title(), False, hash=img_hash)  # store in database
+                    store_image(filepage.title(), False, img_hash=img_hash)  # store in database
 
             except Exception:
                 traceback.print_exc()
