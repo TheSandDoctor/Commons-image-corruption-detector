@@ -18,14 +18,14 @@ from PIL import FileFormatError
 from database_stuff import get_expired_images, calculateDifference, update_entry
 import pywikibot
 import pwb_wrappers
-from image_corruption_utils import notifyUser
+from image_corruption_utils import notify_user
 
 
 def notify_and_tag(site, filepage, days):
     pwb_wrappers.tag_page(filepage, "{{SD|Corrupt image that has not been resolved in " + str(days) + "}}",
                           "Nominating corrupt file for deletion - passed " + str(days) + " day grace period.",
                           minor=False)
-    notifyUser(site, filepage, days, 'followup', day_count=days)
+    notify_user(site, filepage, days, 'followup', day_count=days)
 
 
 def run(site, image, isCorrupt, date_scanned, to_delete_nom):

@@ -20,7 +20,7 @@
 
 
 import json
-#import signal
+# import signal
 
 from redis import Redis
 
@@ -45,12 +45,12 @@ def run_watcher():
     site = pywikibot.Site(user="TheSandBot")
     redis = Redis(host="tools-redis")
 
-    #signal.signal(signal.SIGALRM, on_timeout)
-    #signal.alarm(TIMEOUT)
+    # signal.signal(signal.SIGALRM, on_timeout)
+    # signal.alarm(TIMEOUT)
 
     rc = site_rc_listener(site)
     for change in rc:
-        #signal.alarm(TIMEOUT)
+        # signal.alarm(TIMEOUT)
 
         if (
             change['type'] == 'log' and

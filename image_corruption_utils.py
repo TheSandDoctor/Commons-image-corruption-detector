@@ -99,7 +99,7 @@ def getUploaderAndTimestamp(site, filename):
             UnicodeType(fp.latest_file_info.timestamp.isoformat())]
 
 
-def notifyUser(site, image, time_duration, task_name, minor=True, day_count=None):
+def notify_user(site, image, time_duration, task_name, minor=True, day_count=None):
     """
     Notify user of corruption (if task_name = 'full_scan' or 'monitor') or of tagging for deletion
     (if parameter anything else).

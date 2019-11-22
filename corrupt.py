@@ -66,7 +66,7 @@ def process_file(image_page, site):
         print("Saved page and logged in database")
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
-            notifyUser(site, image_page, "30 days", "full_scan")
+            notify_user(site, image_page, "30 days", "full_scan")
         except:  # TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
     else:  # image not corrupt
