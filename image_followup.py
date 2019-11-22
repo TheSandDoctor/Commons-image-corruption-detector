@@ -15,7 +15,7 @@ from __future__ import absolute_import
 import mwparserfromhell, os
 from image_corruption_utils import *
 from PIL import FileFormatError
-from database_stuff import get_expired_images, calculateDifference, update_entry
+from database_stuff import get_expired_images, calculate_difference, update_entry
 import pywikibot
 import pwb_wrappers
 from image_corruption_utils import notify_user
@@ -64,8 +64,8 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     del ext  # no longer a needed variable
     if result:  # image corrupt
         try:  # TODO: Add record to database about successful notification?
-            notify_and_tag(site, image_page, calculateDifference(date_scanned))
-            # notify_and_tag_for_deletion(site, image_page, username, calculateDifference(date_scanned))
+            notify_and_tag(site, image_page, calculate_difference(date_scanned))
+            # notify_and_tag_for_deletion(site, image_page, username, calculate_difference(date_scanned))
         except:  # TODO: Add record to database about failed notification?
             pass
     else:  # image not corrupt

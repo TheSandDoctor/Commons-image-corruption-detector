@@ -20,7 +20,7 @@ expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM ima
 update_entry = {"UPDATE images_viewed SET isCorrupt = %s, to_delete_nom = %s, hash = %s WHERE title = %s"}
 
 
-def getNextMonth(day_count):
+def get_next_month(day_count):
     """
     Generate date timestamp from now until the provided day_count.
     :param day_count: how many days from now to calculate the date of (int)
@@ -29,7 +29,7 @@ def getNextMonth(day_count):
     return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%m/%d/%Y')
 
 
-def calculateDifference(date_tagged):
+def calculate_difference(date_tagged):
     """
     Calculate the difference between the current date and a provided date string
     :param date_tagged: Date string
@@ -56,7 +56,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
             'title': title,
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
-            'to_delete_nom': getNextMonth(day_count),
+            'to_delete_nom': get_next_month(day_count),
             'hash': str(img_hash)
         }
     else:
