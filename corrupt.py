@@ -64,6 +64,9 @@ def process_file(image_page, site):
                                      "Image detected as corrupt, tagging.")
         store_image(image_page.title(), True, img_hash=img_hash)  # store in database
         print("Saved page and logged in database")
+        global number_saved
+        number_saved += 1
+        print(number_saved)
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
             notify_user(site, image_page, "30 days", "full_scan")
@@ -81,6 +84,9 @@ def run(utils):
             offset -= 1
             print("Skipped due to offset config")
             continue
+        global number_saved
+        if number_saved >= 10:
+            break
         print("Working with: " + str(page.title()))
         # print(number_saved)
         text = page.text

@@ -19,6 +19,8 @@ from config import REDIS_KEY
 from PIL import Image
 from redis import Redis
 
+number_saved = 0
+
 
 def retry_apierror(f):
     # https://github.com/toolforge/embeddeddata/blob/5ecd31417a4c3c5d1be9c2a58f55a1665d9c767f/worker.py#L238
@@ -66,6 +68,8 @@ def run_worker():
         redis = Redis(host="tools-redis")
 
         while True:
+            if number_saved >= 10:
+                break
             _, change = redis.blpop(REDIS_KEY)
             change = json.loads(change)
             filepage = pywikibot.FilePage(site, change['title'])
@@ -151,6 +155,8 @@ def run_worker():
                                                  "Image detected as corrupt, tagging.")
                     store_image(filepage.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     print("Saved page and logged in database")
+                    global number_saved
+                    number_saved += 1
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
                         notify_user(site, filepage, "30 days", "monitor")
