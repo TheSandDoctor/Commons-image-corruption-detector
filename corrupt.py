@@ -84,9 +84,9 @@ def run(utils):
             offset -= 1
             print("Skipped due to offset config")
             continue
-        global number_saved
+        global number_saved  # FIXME: This section MUST be removed once trials done and approved
         if number_saved >= 10:
-            break
+            break  # FIXME: End section
         print("Working with: " + str(page.title()))
         # print(number_saved)
         text = page.text

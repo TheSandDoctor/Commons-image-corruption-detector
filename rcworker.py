@@ -68,8 +68,8 @@ def run_worker():
         redis = Redis(host="tools-redis")
 
         while True:
-            if number_saved >= 10:
-                break
+            if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved
+                break  # FIXME: This MUST be removed once trials done and approved
             _, change = redis.blpop(REDIS_KEY)
             change = json.loads(change)
             filepage = pywikibot.FilePage(site, change['title'])
@@ -155,8 +155,8 @@ def run_worker():
                                                  "Image detected as corrupt, tagging.")
                     store_image(filepage.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     print("Saved page and logged in database")
-                    global number_saved
-                    number_saved += 1
+                    global number_saved  # FIXME: This MUST be removed once trials done and approved
+                    number_saved += 1  # FIXME: This MUST be removed once trials done and approved
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
                         notify_user(site, filepage, "30 days", "monitor")
