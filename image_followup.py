@@ -73,7 +73,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
 
         code = mwparserfromhell.parse(image_page.text)
         for template in code.filter_templates():
-            if template.name.matches("Template:User:TheSandDoctor/Template:TSB image identified corrupt"):
+            if template.name.matches("TSB image identified corrupt"):
                 code.remove(template)  # template no longer needed
         pwb_wrappers.retry_apierror(
             lambda:

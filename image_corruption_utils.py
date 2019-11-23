@@ -124,7 +124,7 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
         summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
         print("Notification of corruption of " + str(image.title()))
     else:  # if task_name == 'followup':
-        msg = "{{TSB corruption CSD notification|user=" + str(user) + "|file=" + str(
+        msg = "{{subst:TSB corruption CSD notification|user=" + str(user) + "|file=" + str(
             image.title()) + "|time_duration=" + str(day_count) + "}} ~~~~"
         summary = "Nominating corrupt file for deletion - passed " + str(day_count) + " day grace period."
         print("Notification of CSD nomination of " + str(image.title()))

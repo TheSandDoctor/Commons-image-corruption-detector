@@ -13,7 +13,7 @@ from pywikibot.data.api import APIError
 from pywikibot.throttle import Throttle
 
 import pwb_wrappers
-from database_stuff import store_image
+from database_stuff import store_image, get_next_month
 from image_corruption_utils import image_is_corrupt, notify_user
 from config import REDIS_KEY
 from PIL import Image
@@ -149,9 +149,10 @@ def run_worker():
                 img_hash = str(change['log_params']['img_sha1'])
                 if corrupt_result:
                     text = pwb_wrappers.tag_page(filepage,
-                                                 "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|"
+                                                 "{{TSB image identified corrupt|"
                                                  + datetime.now(
-                                                     datetime.timezone.utc).strftime("%Y-%m-%d") + "}}",
+                                                     datetime.timezone.utc).strftime("%m/%d/%Y") + "|date=" +
+                                                 str(get_next_month(30)) + "}}",
                                                  "Image detected as corrupt, tagging.")
                     store_image(filepage.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     print("Saved page and logged in database")

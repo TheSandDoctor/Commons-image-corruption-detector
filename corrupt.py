@@ -7,7 +7,7 @@ import traceback, sys, re, configparser, json, pathlib
 
 from datetime import datetime, timezone
 from image_corruption_utils import *
-from database_stuff import store_image, have_seen_image
+from database_stuff import store_image, have_seen_image, get_next_month
 from PIL import FileFormatError
 import pywikibot
 import pwb_wrappers
@@ -22,8 +22,7 @@ def save_page(site, page, text, edit_summary, is_bot_edit=True, is_minor=True):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
     retry_apierror(
         lambda:
-        page.save(appendtext=text, section='new',  # FIXME: appendtext and section=new surely don't play together(?)
-                  summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
+        page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
     )
 
 
@@ -58,9 +57,9 @@ def process_file(image_page, site):
     del ext  # no longer a needed variable
     if result:  # image corrupt
         text = pwb_wrappers.tag_page(image_page,
-                                     "{{Template:User:TheSandDoctor/Template:TSB image identified corrupt|" +
+                                     "{{TSB image identified corrupt|" +
                                      datetime.now(
-                                         timezone.utc).strftime("%Y-%m-%d") + "}}",
+                                         timezone.utc).strftime("%m/%d/%Y") + "|date=" + str(get_next_month(30)) + "}}",
                                      "Image detected as corrupt, tagging.")
         store_image(image_page.title(), True, img_hash=img_hash)  # store in database
         print("Saved page and logged in database")
