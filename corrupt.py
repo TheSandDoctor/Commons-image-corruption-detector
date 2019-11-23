@@ -56,11 +56,13 @@ def process_file(image_page, site):
             raise
     del ext  # no longer a needed variable
     if result:  # image corrupt
-        text = pwb_wrappers.tag_page(image_page,
-                                     "{{TSB image identified corrupt|" +
-                                     datetime.now(
-                                         timezone.utc).strftime("%m/%d/%Y") + "|date=" + str(get_next_month(30)) + "}}",
-                                     "Image detected as corrupt, tagging.")
+        nom_date = str(get_next_month(30)).split('/')
+        pwb_wrappers.tag_page(image_page,
+                              "{{TSB image identified corrupt|" +
+                              datetime.now(
+                                  timezone.utc).strftime("%m/%d/%Y") + "|day=" + nom_date[1] + "|month=" +
+                              nom_date[0] + "|year=" + nom_date[2] + "}}",
+                              "Image detected as corrupt, tagging.")
         store_image(image_page.title(), True, img_hash=img_hash)  # store in database
         print("Saved page and logged in database")
         global number_saved

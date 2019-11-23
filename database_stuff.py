@@ -26,7 +26,7 @@ def get_next_month(day_count):
     :param day_count: how many days from now to calculate the date of (int)
     :return: Date string in format m/d/yyyy
     """
-    return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%m/%d/%Y')
+    return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%B/%d/%Y')
 
 
 def calculate_difference(date_tagged):
@@ -55,7 +55,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
-            'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
+            'date_scanned': datetime.now(timezone.utc).date().strftime('%B/%d/%Y'),
             'to_delete_nom': get_next_month(day_count),
             'hash': str(img_hash)
         }
@@ -63,7 +63,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
-            'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
+            'date_scanned': datetime.now(timezone.utc).date().strftime('%B/%d/%Y'),
             'hash': str(img_hash)
         }
     cursor.execute(insert_image, image_data)
@@ -84,7 +84,7 @@ def get_expired_images():
     """
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%m/%d/%Y'))
+    cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%B/%d/%Y'))
     raw = cursor.fetchall()  # returns tuples
     cnx.close()
     return raw

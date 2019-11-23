@@ -148,12 +148,13 @@ def run_worker():
 
                 img_hash = str(change['log_params']['img_sha1'])
                 if corrupt_result:
-                    text = pwb_wrappers.tag_page(filepage,
-                                                 "{{TSB image identified corrupt|"
-                                                 + datetime.now(
-                                                     datetime.timezone.utc).strftime("%m/%d/%Y") + "|date=" +
-                                                 str(get_next_month(30)) + "}}",
-                                                 "Image detected as corrupt, tagging.")
+                    nom_date = str(get_next_month(30)).split('/')
+                    pwb_wrappers.tag_page(filepage,
+                                          "{{TSB image identified corrupt|"
+                                          + datetime.now(
+                                              datetime.timezone.utc).strftime("%m/%d/%Y") + "|day=" +
+                                          nom_date[1] + "|month=" + nom_date[0] + "|year=" + nom_date[2] + "}}",
+                                          "Image detected as corrupt, tagging.")
                     store_image(filepage.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     print("Saved page and logged in database")
                     global number_saved  # FIXME: This MUST be removed once trials done and approved
