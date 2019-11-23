@@ -119,19 +119,18 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
     if task_name == 'full_scan' or task_name == 'monitor':
         msg = "{{subst:TSB corruption notification|user=" + str(user) + "|file=" + str(image.title()) + "|time=" + str(
             timestamp)
-        msg += "|time_duration=" + str(time_duration) + "}}"
+        msg += "|time_duration=" + str(time_duration) + "}} ~~~~"
 
         summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
         print("Notification of corruption of " + str(image.title()))
     else:  # if task_name == 'followup':
         msg = "{{TSB corruption CSD notification|user=" + str(user) + "|file=" + str(
-            image.title()) + "|time_duration=" + str(day_count) + "}}"
+            image.title()) + "|time_duration=" + str(day_count) + "}} ~~~~"
         summary = "Nominating corrupt file for deletion - passed " + str(day_count) + " day grace period."
         print("Notification of CSD nomination of " + str(image.title()))
 
-        # FIXME: appendtext and section=new surely don't play together(?)
         retry_apierror(
-            lambda: tp.save(appendtext=msg, section='new', summary=summary, minor=minor, botflag=True, force=True))
+            lambda: tp.save(appendtext=msg, summary=summary, minor=minor, botflag=True, force=True))
 
 
 def call_home(site_obj, key):
