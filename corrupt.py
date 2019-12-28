@@ -112,8 +112,8 @@ def run(utils):
 def main():
     config = None
     site = pywikibot.Site(code='commons', fam='commons', user='TheSandBot')
-    lresult = site.login()
-    if not lresult:
+    login_result = site.login()
+    if not login_result:
         raise ValueError('Incorrect password')
     offset = 0
     utils = [config, site, offset]
