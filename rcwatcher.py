@@ -20,37 +20,19 @@
 
 
 import json
-# import signal
-
 from redis import Redis
-
 import pywikibot
 from pywikibot.comms.eventstreams import site_rc_listener
 
 from config import REDIS_KEY
-
-# timeout should no longer be needed https://gerrit.wikimedia.org/r/#/c/pywikibot/core/+/525179/
-#TIMEOUT = 60  # We expect at least one rc entry every minute
-
-
-#class TimeoutError(Exception):
-#    pass
-
-
-#def on_timeout(signum, frame):
-#    raise TimeoutError
 
 
 def run_watcher():
     site = pywikibot.Site(user="TheSandBot")
     redis = Redis(host="tools-redis")
 
-    # signal.signal(signal.SIGALRM, on_timeout)
-    # signal.alarm(TIMEOUT)
-
     rc = site_rc_listener(site)
     for change in rc:
-        # signal.alarm(TIMEOUT)
 
         if (
             change['type'] == 'log' and
