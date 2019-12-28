@@ -35,7 +35,7 @@ def calculate_difference(date_tagged):
     :param date_tagged: Date string
     :return: the difference in days (int) between current date and provided date_tagged
     """
-    date_tagged = datetime.strptime(date_tagged, '%m/%d/%Y').date()
+    date_tagged = datetime.strptime(date_tagged, '%B/%d/%Y').date()
     return (datetime.now(timezone.utc).date() - date_tagged).days
 
 
@@ -109,10 +109,7 @@ def have_seen_image(site, title):
     cursor.execute(sql, (title, img_hash))
     msg = cursor.fetchone()
     cnx.close()
-    return not msg
-    # if not msg:
-    #    return False
-    # return True
+    return msg
 
 
 def update_entry(title, isCorrupt, to_delete_nom, img_hash):
@@ -128,4 +125,5 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash):
     cursor = cnx.cursor()
     cursor.execute(update_entry, (isCorrupt, to_delete_nom, img_hash, title))
     cnx.commit()
+    cnx.close()
     print("Record updated")
