@@ -36,23 +36,6 @@ def retry_apierror(f):
         raise
 
 
-def add_speedy(filepage, msg):
-    # https://github.com/toolforge/embeddeddata/blob/5ecd31417a4c3c5d1be9c2a58f55a1665d9c767f/worker.py#L361
-    filepage.clear_cache()
-
-    if not filepage.exists():
-        pywikibot.warning("Page doesn't exist, skipping save.")
-        return
-
-    # Make sure no edit conflicts happen here
-    retry_apierror(
-        lambda:
-        filepage.save(prependtext='{{embedded data|suspect=1|1=%s}}\n' % msg,
-                      summary='Bot: Adding {{[[Template:Embedded data|'
-                              'embedded data]]}} to this embedded data suspect.')
-    )
-
-
 def run_worker():
     try:
         tmpdir = tempfile.mkdtemp()
