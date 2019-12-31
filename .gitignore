@@ -4,3 +4,4 @@ credentials.txt
 user-config.py
 pywikibot.lwp
 throttle.ctrl
+venv/
