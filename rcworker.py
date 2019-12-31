@@ -16,7 +16,7 @@ import pwb_wrappers
 from database_stuff import store_image, get_next_month
 from image_corruption_utils import image_is_corrupt, notify_user
 from config import REDIS_KEY
-from PIL import Image
+from PIL import UnidentifiedImageError
 from redis import Redis
 
 number_saved = 0
@@ -124,7 +124,7 @@ def run_worker():
                 del success
                 try:
                     corrupt_result = image_is_corrupt(path)
-                except Image.FileFormatError as e:
+                except UnidentifiedImageError as e:
                     print("Not an image (or at very least not currently supported by PIL)")
                     os.remove(path)  # file not an image
                     # Previously the idea was to just raise the error,

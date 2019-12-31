@@ -14,7 +14,7 @@ from __future__ import absolute_import
 
 import mwparserfromhell, os
 from image_corruption_utils import *
-from PIL import FileFormatError
+from PIL import UnidentifiedImageError
 from database_stuff import get_expired_images, calculate_difference, update_entry
 import pywikibot
 import pwb_wrappers
@@ -58,7 +58,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     with open("./Example3" + ext, "rb") as f:
         try:
             result = image_is_corrupt(f)
-        except FileFormatError:
+        except UnidentifiedImageError:
             os.remove("./Example3" + ext)  # file not an image.
             raise
     del ext  # no longer a needed variable

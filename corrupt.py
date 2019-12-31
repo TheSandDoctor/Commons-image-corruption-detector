@@ -8,7 +8,7 @@ import traceback, sys, re, configparser, json, pathlib
 from datetime import datetime, timezone
 from image_corruption_utils import *
 from database_stuff import store_image, have_seen_image, get_next_month
-from PIL import FileFormatError
+from PIL import UnidentifiedImageError
 import pywikibot
 import pwb_wrappers
 import os
@@ -51,7 +51,7 @@ def process_file(image_page, site):
     with open("./Example" + ext, "rb") as f:
         try:
             result = image_is_corrupt(f)
-        except FileFormatError:
+        except UnidentifiedImageError:
             os.remove('./Example' + ext)  # file not an image
             raise
     del ext  # no longer a needed variable
@@ -97,7 +97,7 @@ def run(utils):
                 continue
             try:
                 process_file(page, site)
-            except FileFormatError as e:  # File not an image. Best to just continue
+            except UnidentifiedImageError as e:  # File not an image. Best to just continue
                 continue
             except ValueError as e2:
                 print(e2)

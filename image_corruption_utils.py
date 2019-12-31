@@ -1,5 +1,6 @@
 from PIL import Image
 from PIL import ImageFile
+from PIL import UnidentifiedImageError
 from pywikibot import UnicodeType
 import json
 import mysql.connector
@@ -14,17 +15,17 @@ def image_is_corrupt(f):
     """
     Check if image is corrupt. If an image is corrupt, it will fail .tobytes().
     It is also important to note that this will also fail if the file at hand is *not* an image. This is mitigated
-    by the custom implementation of FileFormatError to catch this specific case.
+    by the custom implementation of UnidentifiedImageError to catch this specific case.
     :param f: path/name of file to check if corrupt
     :return: True if corrupt, False if valid
-    :raise FileFormatError if not a valid image
+    :raise UnidentifiedImageError if not a valid image
     """
     try:
         image = Image.open(f)
         image.tobytes()
         print("Works")
         return False
-    except Image.FileFormatError as e:
+    except UnidentifiedImageError as e:
         print("Not an image")
         raise
     except Exception as e2:
