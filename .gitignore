@@ -2,6 +2,7 @@
 .idea/
 credentials.txt
 user-config.py
+config.py
 pywikibot.lwp
 throttle.ctrl
 venv/
