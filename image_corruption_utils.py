@@ -130,8 +130,7 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
         summary = "Nominating corrupt file for deletion - passed " + str(day_count) + " day grace period."
         print("Notification of CSD nomination of " + str(image.title()))
 
-        retry_apierror(
-            lambda: tp.save(appendtext=msg, summary=summary, minor=minor, botflag=True, force=True))
+    retry_apierror(lambda: tp.save(appendtext=msg, summary=summary, minor=minor, botflag=True, force=True))
 
 
 def call_home(site_obj, key):
