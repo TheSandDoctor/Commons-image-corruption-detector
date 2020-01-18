@@ -18,6 +18,7 @@ from image_corruption_utils import image_is_corrupt, notify_user
 from config import REDIS_KEY
 from PIL import UnidentifiedImageError
 from redis import Redis
+from Image import ImageObj
 
 number_saved = 0
 
@@ -55,11 +56,13 @@ def run_worker():
             if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved
                 break  # FIXME: This MUST be removed once trials done and approved
             _, change = redis.blpop(REDIS_KEY)
-            change = json.loads(change)
-            file_page = pywikibot.FilePage(site, change['title'])
+            # change = json.loads(change)
+            #file_page = pywikibot.FilePage(site, change['title'])
+            file_page = pywikibot.FilePage(site, change.title)
 
             if not file_page.exists():
-                print(pywikibot.warning('File page does not exist ' + str(change['title'])))
+                #print(pywikibot.warning('File page does not exist ' + str(change['title'])))
+                print(pywikibot.warning('File page does not exist ' + change.title))
                 continue
 
             for i in range(8):
@@ -75,29 +78,31 @@ def run_worker():
             else:
                 raise
 
-            try:
-                revision = file_page.get_file_history()[
-                    pywikibot.Timestamp.fromtimestampformat(
-                        change['log_params']['img_timestamp'])]
-            except KeyError:
-                try:
-                    # From rcbacklog
-                    revision = file_page.get_file_history()[
-                        pywikibot.Timestamp.fromISOformat(
-                            change['params']['img_timestamp'])]
-                except KeyError:
-                    try:
-                        revision = file_page.get_file_history()[
-                            pywikibot.Timestamp.fromtimestamp(
-                                change['timestamp'])]
-                    except KeyError:
-                        revision = file_page.latest_file_info
-                        pywikibot.warning(
-                            'Cannot fetch specified revision, falling back to '
-                            'latest revision.')
+            # try:
+            #     revision = file_page.get_file_history()[
+            #         pywikibot.Timestamp.fromtimestampformat(
+            #             change['log_params']['img_timestamp'])]
+            # except KeyError:
+            #     try:
+            #         # From rcbacklog
+            #         revision = file_page.get_file_history()[
+            #             pywikibot.Timestamp.fromISOformat(
+            #                 change['params']['img_timestamp'])]
+            #     except KeyError:
+            #         try:
+            #             revision = file_page.get_file_history()[
+            #                 pywikibot.Timestamp.fromtimestamp(
+            #                     change['timestamp'])]
+            #         except KeyError:
+            #             revision = file_page.latest_file_info
+            #             pywikibot.warning(
+            #                 'Cannot fetch specified revision, falling back to '
+            #                 'latest revision.')
+            revision = change.getRevision(file_page)
 
-            pywikibot.output('Working on: %s at %s' % (change['title'],
-                                                       revision.timestamp))
+            #pywikibot.output('Working on: %s at %s' % (change['title'],
+            #                                           revision.timestamp))
+            pywikibot.output('Working on: %s at %s' % (change.title, revision.timestamp))
 
             path = os.path.join(tmpdir, str(uuid.uuid1()))
 
@@ -132,7 +137,8 @@ def run_worker():
                     # to the next file (once local removed)
                     continue
 
-                img_hash = str(change['log_params']['img_sha1'])
+                #img_hash = str(change['log_params']['img_sha1'])
+                #img_hash = change.hash
                 if corrupt_result:
                     nom_date = str(get_next_month(30)).split('/')
                     pwb_wrappers.tag_page(file_page,
@@ -141,7 +147,8 @@ def run_worker():
                                               datetime.timezone.utc).strftime("%m/%d/%Y") + "|day=" +
                                           nom_date[1] + "|month=" + nom_date[0] + "|year=" + nom_date[2] + "}}",
                                           "Image detected as corrupt, tagging.")
-                    store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
+                    #store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
+                    store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
                     print("Saved page and logged in database")
                     global number_saved  # FIXME: This MUST be removed once trials done and approved
                     number_saved += 1  # FIXME: This MUST be removed once trials done and approved
@@ -151,7 +158,8 @@ def run_worker():
                     except:  # TODO: Add record to database about failed notification?
                         print("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
                 else:  # image not corrupt
-                    store_image(file_page.title(), False, img_hash=img_hash)  # store in database
+                    #store_image(file_page.title(), False, img_hash=img_hash)  # store in database
+                    store_image(file_page.title(), False, img_hash=change.hash)  # store in database
 
             except Exception:
                 traceback.print_exc()

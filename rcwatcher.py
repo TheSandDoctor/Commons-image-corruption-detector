@@ -25,6 +25,7 @@ import pywikibot
 from pywikibot.comms.eventstreams import site_rc_listener
 
 from config import REDIS_KEY
+from Image import ImageObj
 
 
 def run_watcher():
@@ -39,7 +40,8 @@ def run_watcher():
             change['namespace'] == 6 and
             change['log_type'] == 'upload'
         ):
-            redis.rpush(REDIS_KEY, json.dumps(change))
+            #redis.rpush(REDIS_KEY, json.dumps(change))
+            redis.rpush(REDIS_KEY, ImageObj(json.loads(change)))
 
     pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
 
