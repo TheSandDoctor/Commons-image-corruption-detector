@@ -1,6 +1,6 @@
 from __future__ import print_function
 from datetime import date, datetime, timedelta, timezone
-import mysql.connector
+import mysql.connector as mariadb
 from image_corruption_utils import getRemoteHash
 
 insert_image = ("INSERT INTO images_viewed "
@@ -42,7 +42,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
     if image isn't corrupt in the first place (database defaults to NULL if no value provided)
     :return: None
     """
-    cnx = mysql.connector.connect(**config)
+    cnx = mariadb.connect(**config)
     cursor = cnx.cursor()
     if isCorrupt:
         image_data = {
@@ -59,10 +59,14 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
             'date_scanned': datetime.now(timezone.utc).date().strftime('%B/%d/%Y'),
             'hash': str(img_hash)
         }
-    cursor.execute(insert_image, image_data)
-    cnx.commit()
-    print(cursor.rowcount, "record inserted.")
-    cnx.close()
+    try:
+        cursor.execute(insert_image, image_data)
+        cnx.commit()
+        print(cursor.rowcount, "record inserted.")
+    except mariadb.Error as error:
+        print("Error: {}".format(error))
+    finally:
+        cnx.close()
 
 
 def get_expired_images():
@@ -75,11 +79,15 @@ def get_expired_images():
            3rd element: to_delete_nom
     :return: images whose expiry date is today (UTC) as tuples.
     """
-    cnx = mysql.connector.connect(**config)
+    cnx = mariadb.connect(**config)
     cursor = cnx.cursor()
-    cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%B/%d/%Y'))
-    raw = cursor.fetchall()  # returns tuples
-    cnx.close()
+    try:
+        cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%B/%d/%Y'))
+        raw = cursor.fetchall()  # returns tuples
+    except mariadb.Error as error:
+        print("Error: {}".format(error))
+    finally:
+        cnx.close()
     return raw
     # data = []
     # for i in raw:
@@ -95,13 +103,17 @@ def have_seen_image(site, title):
     :param title: filename to check
     :return: True if seen, False if not
     """
-    cnx = mysql.connector.connect(**config)
+    cnx = mariadb.connect(**config)
     cursor = cnx.cursor()
     img_hash = getRemoteHash(site, title)
     sql = "SELECT title FROM images_viewed WHERE title = %s AND hash=%s"
-    cursor.execute(sql, (title, img_hash))
-    msg = cursor.fetchone()
-    cnx.close()
+    try:
+        cursor.execute(sql, (title, img_hash))
+        msg = cursor.fetchone()
+    except mariadb.Error as error:
+        print("Error: {}".format(error))
+    finally:
+        cnx.close()
     return msg
 
 
@@ -114,9 +126,13 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash):
     :param img_hash: hash of the image to compare with the stored database value
     :return: None
     """
-    cnx = mysql.connector.connect(**config)
+    cnx = mariadb.connect(**config)
     cursor = cnx.cursor()
-    cursor.execute(update_entry, (isCorrupt, to_delete_nom, img_hash, title))
-    cnx.commit()
-    cnx.close()
+    try:
+        cursor.execute(update_entry, (isCorrupt, to_delete_nom, img_hash, title))
+        cnx.commit()
+    except mariadb.Error as error:
+        print("Error: {}".format(error))
+    finally:
+        cnx.close()
     print("Record updated")
