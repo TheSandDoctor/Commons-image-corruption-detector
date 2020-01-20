@@ -3,13 +3,6 @@ from datetime import date, datetime, timedelta, timezone
 import mysql.connector
 from image_corruption_utils import getRemoteHash
 
-config = {
-    'user': 'scott',
-    'password': 'password',
-    'host': '127.0.0.1',
-    'database': 'images',
-    'raise_on_warnings': True
-}
 insert_image = ("INSERT INTO images_viewed "
                 "(title, isCorrupt, date_scanned, to_delete_nom, hash) "
                 "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s, %(hash)s)")
