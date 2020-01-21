@@ -20,7 +20,7 @@ def get_next_month(day_count):
     :param day_count: how many days from now to calculate the date of (int)
     :return: Date string in format m/d/yyyy
     """
-    return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%B/%d/%Y')
+    return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%m/%d/%Y')
 
 
 def calculate_difference(date_tagged):
@@ -29,7 +29,7 @@ def calculate_difference(date_tagged):
     :param date_tagged: Date string
     :return: the difference in days (int) between current date and provided date_tagged
     """
-    date_tagged = datetime.strptime(date_tagged, '%B/%d/%Y').date()
+    date_tagged = datetime.strptime(date_tagged, '%m/%d/%Y').date()
     return (datetime.now(timezone.utc).date() - date_tagged).days
 
 
@@ -49,7 +49,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
-            'date_scanned': datetime.now(timezone.utc).date().strftime('%B/%d/%Y'),
+            'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': get_next_month(day_count),
             'hash': str(img_hash)
         }
@@ -57,7 +57,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
-            'date_scanned': datetime.now(timezone.utc).date().strftime('%B/%d/%Y'),
+            'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'hash': str(img_hash)
         }
     try:
@@ -83,7 +83,7 @@ def get_expired_images():
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
-        cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%B/%d/%Y'))
+        cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%m/%d/%Y'))
         raw = cursor.fetchall()  # returns tuples
     except mariadb.Error as error:
         print("Error: {}".format(error))
