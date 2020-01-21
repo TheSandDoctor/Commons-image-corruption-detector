@@ -2,6 +2,7 @@ from __future__ import print_function
 from datetime import date, datetime, timedelta, timezone
 import mysql.connector as mariadb
 from image_corruption_utils import getRemoteHash
+import config
 
 insert_image = ("INSERT INTO images_viewed "
                 "(title, isCorrupt, date_scanned, to_delete_nom, hash) "
@@ -42,7 +43,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
     if image isn't corrupt in the first place (database defaults to NULL if no value provided)
     :return: None
     """
-    cnx = mariadb.connect(**config)
+    cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     if isCorrupt:
         image_data = {
@@ -79,7 +80,7 @@ def get_expired_images():
            3rd element: to_delete_nom
     :return: images whose expiry date is today (UTC) as tuples.
     """
-    cnx = mariadb.connect(**config)
+    cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
         cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%B/%d/%Y'))
@@ -103,7 +104,7 @@ def have_seen_image(site, title):
     :param title: filename to check
     :return: True if seen, False if not
     """
-    cnx = mariadb.connect(**config)
+    cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     img_hash = getRemoteHash(site, title)
     sql = "SELECT title FROM images_viewed WHERE title = %s AND hash=%s"
@@ -126,7 +127,7 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash):
     :param img_hash: hash of the image to compare with the stored database value
     :return: None
     """
-    cnx = mariadb.connect(**config)
+    cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
         cursor.execute(update_entry, (isCorrupt, to_delete_nom, img_hash, title))
