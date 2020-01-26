@@ -144,3 +144,4 @@ def call_home(site_obj, key):
     text = page.text
     data = json.loads(text)["run"]["corrupt_image_finder"][key]
     return str(data) == str(True)
+

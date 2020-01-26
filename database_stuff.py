@@ -3,15 +3,16 @@ from datetime import date, datetime, timedelta, timezone
 import mysql.connector as mariadb
 from image_corruption_utils import getRemoteHash
 import config
+import manapi
 
 insert_image = ("INSERT INTO images_viewed "
-                "(title, isCorrupt, date_scanned, to_delete_nom, hash) "
-                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s, %(hash)s)")
+                "(title, isCorrupt, date_scanned, to_delete_nom, hash, page_id) "
+                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s, %(hash)s, %(page_id)s)")
 
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                   "WHERE to_delete_nom = %s"}
 
-update_entry = {"UPDATE images_viewed SET isCorrupt = %s, to_delete_nom = %s, hash = %s WHERE title = %s"}
+update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s WHERE page_id = %s"}
 
 
 def get_next_month(day_count):
@@ -33,16 +34,19 @@ def calculate_difference(date_tagged):
     return (datetime.now(timezone.utc).date() - date_tagged).days
 
 
-def store_image(title, isCorrupt, img_hash, day_count=30):
+def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None):
     """
     Stores current image information (provided in header) into the database for this application.
     :param title: filename
     :param isCorrupt: (bool)
     :param img_hash: sha1 hash of image
+    :param page_id: page id (optional)
     :param day_count: how long a grace period pre-nomination if unresolved by then (default: 30 days, not stored
     if image isn't corrupt in the first place (database defaults to NULL if no value provided)
     :return: None
     """
+    if page_id is None:
+        page_id = manapi.getPageID(title)
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     if isCorrupt:
@@ -51,7 +55,8 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': get_next_month(day_count),
-            'hash': str(img_hash)
+            'hash': str(img_hash),
+            'page_id': int(page_id)
         }
     else:
         image_data = {
@@ -59,7 +64,8 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': None,
-            'hash': str(img_hash)
+            'hash': str(img_hash),
+            'page_id': int(page_id)
         }
     try:
         cursor.execute(insert_image, image_data)
@@ -97,20 +103,23 @@ def get_expired_images():
     # return data
 
 
-def have_seen_image(site, title):
+def have_seen_image(site, title, page_id=None):
     """
     Checks if we have previously viewed this image with its current hash value. This is done through connecting to the
     database for this application.
     :param site: site object
     :param title: filename to check
+    :param page_id: page id to check (optional)
     :return: True if seen, False if not
     """
+    if page_id is None:
+        page_id = manapi.getPageID(title)
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
-    img_hash = getRemoteHash(site, title)
-    sql = "SELECT title FROM images_viewed WHERE title = %s AND hash=%s"
+    # img_hash = getRemoteHash(site, title)
+    sql = "SELECT title FROM images_viewed WHERE page_id=%s"
     try:
-        cursor.execute(sql, (title, img_hash))
+        cursor.execute(sql, page_id)
         msg = cursor.fetchone()
     except mariadb.Error as error:
         print("Error: {}".format(error))
@@ -119,19 +128,22 @@ def have_seen_image(site, title):
     return msg
 
 
-def update_entry(title, isCorrupt, to_delete_nom, img_hash):
+def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None):
     """
     Updates existing entry in database. This is currently called in image_followup when an image has been corrected.
     :param title: filename
     :param isCorrupt: (bool)
     :param to_delete_nom: date string for when to nominate for deletion (NULL if not corrupt)
     :param img_hash: hash of the image to compare with the stored database value
+    :param page_id: page id (optional)
     :return: None
     """
+    if page_id is None:
+        page_id = manapi.getPageID(title)
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
-        cursor.execute(update_entry, (isCorrupt, to_delete_nom, img_hash, title))
+        cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, page_id))
         cnx.commit()
     except mariadb.Error as error:
         print("Error: {}".format(error))
