@@ -58,6 +58,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30):
             'title': title,
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
+            'to_delete_nom': None,
             'hash': str(img_hash)
         }
     try:
