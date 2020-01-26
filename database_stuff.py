@@ -116,10 +116,10 @@ def have_seen_image(site, title, page_id=None):
         page_id = manapi.getPageID(title)
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
-    # img_hash = getRemoteHash(site, title)
-    sql = "SELECT title FROM images_viewed WHERE page_id=%s"
+    img_hash = getRemoteHash(site, title)
+    sql = "SELECT title FROM images_viewed WHERE page_id=%s AND img_hash=%s"
     try:
-        cursor.execute(sql, page_id)
+        cursor.execute(sql, (page_id, img_hash))
         msg = cursor.fetchone()
     except mariadb.Error as error:
         print("Error: {}".format(error))
@@ -130,7 +130,7 @@ def have_seen_image(site, title, page_id=None):
 
 def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None):
     """
-    Updates existing entry in database. This is currently called in image_followup when an image has been corrected.
+    Updates existing entry in database. This is currently called in image_followup when an image has been changed.
     :param title: filename
     :param isCorrupt: (bool)
     :param to_delete_nom: date string for when to nominate for deletion (NULL if not corrupt)
