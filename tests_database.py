@@ -19,7 +19,6 @@ if __name__ == "__main__":
     print("Done 2")
     database_stuff.store_image("tests/test1.jpg", False, image_corruption_utils.getLocalHash("tests/test2.jpg"),
                                page_id=manapi.getPageID('USMC-080114-M-3913K-001.jpg'))
-    database_stuff.store_image("Wirtschaftsschule Bayreuth.JPG", False, image_corruption_utils.getLocalHash("tests/test2.jpg"),
-                               page_id=manapi.getPageID('USMC-080114-M-3913K-001.jpg'))
+    database_stuff.store_image("Wirtschaftsschule Bayreuth.JPG", False, image_corruption_utils.getLocalHash("tests/test2.jpg"))
     print("Done 4")
     #database_stuff.update_entry("test1.jpg", True, datetime.now(timezone.utc).date().strftime('%B/%d/%Y'), image_corruption_utils.getLocalHash("test.jpg"))
