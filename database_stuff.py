@@ -24,6 +24,15 @@ def get_next_month(day_count):
     return (datetime.now(timezone.utc).date() + timedelta(days=day_count)).strftime('%m/%d/%Y')
 
 
+def gen_nom_date(days = 30):
+    """
+    Generate file nomination date.
+    :param days: days from now that it will take effect
+    :return: return list with nom date split on each '/'
+    """
+    return str(get_next_month(days)).split('/')
+
+
 def calculate_difference(date_tagged):
     """
     Calculate the difference between the current date and a provided date string
