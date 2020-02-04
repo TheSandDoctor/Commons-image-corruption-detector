@@ -3,7 +3,7 @@ from PIL import ImageFile
 from PIL import UnidentifiedImageError
 from pywikibot import UnicodeType
 import json
-import mysql.connector
+#import mysql.connector
 import hashlib
 import pywikibot
 from pwb_wrappers import retry_apierror
@@ -34,7 +34,7 @@ def image_is_corrupt(f):
         return True
 
 
-def getLocalHash(filename):
+def get_local_hash(filename):
     """
     This function returns the SHA-1 hash
     of the file passed into it
@@ -57,7 +57,7 @@ def getLocalHash(filename):
     return h.hexdigest()
 
 
-def getRemoteHash(site, filename):
+def get_remote_hash(site, filename):
     """
     Get remote hash from Wikimedia Commons.
 
@@ -72,7 +72,7 @@ def getRemoteHash(site, filename):
     return str(fp.latest_file_info.sha1)
 
 
-def verifyHash(site, local, image_page):
+def verify_hash(site, local, image_page):
     """
     Verifies that two given hashes match.
     :param site: site object
@@ -80,13 +80,13 @@ def verifyHash(site, local, image_page):
     :param image_page: image page object
     :return: True if match, False if not
     """
-    lhash = getLocalHash(local)
-    rhash = getRemoteHash(site, str(image_page.name))
+    lhash = get_local_hash(local)
+    rhash = get_remote_hash(site, str(image_page.name))
     result = lhash == rhash
     return [result, rhash]
 
 
-def getUploaderAndTimestamp(site, filename):
+def get_uploader_and_timestamp(site, filename):
     """
     Get uploader and timestamp of file upload.
     From https://github.com/wikimedia/pywikibot/blob/298ff28eacb0cd50cca8ad19484758daab05d86c/pywikibot/page.py#L2634
@@ -115,7 +115,7 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
     if not call_home(site, task_name):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
 
-    user, timestamp = getUploaderAndTimestamp(site, image.title())
+    user, timestamp = get_uploader_and_timestamp(site, image.title())
     tp = pywikibot.Page(site, "User talk:" + user)
     if task_name == 'full_scan' or task_name == 'monitor':
         msg = "{{subst:TSB corruption notification|user=" + str(user) + "|file=" + str(image.title()) + "|time=" + str(

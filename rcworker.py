@@ -19,6 +19,7 @@ from config import REDIS_KEY
 from PIL import UnidentifiedImageError
 from redis import Redis
 from Image import ImageObj
+from DayCount import EDayCount
 
 number_saved = 0
 
@@ -140,7 +141,7 @@ def run_worker():
                 #img_hash = str(change['log_params']['img_sha1'])
                 #img_hash = change.hash
                 if corrupt_result:
-                    nom_date = str(get_next_month(30)).split('/')
+                    nom_date = str(get_next_month(7)).split('/')
                     pwb_wrappers.tag_page(file_page,
                                           "{{TSB image identified corrupt|"
                                           + datetime.now(
@@ -154,7 +155,7 @@ def run_worker():
                     number_saved += 1  # FIXME: This MUST be removed once trials done and approved
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
-                        notify_user(site, file_page, "30 days", "monitor")
+                        notify_user(site, file_page, EDayCount.DAYS_7, "monitor")
                     except:  # TODO: Add record to database about failed notification?
                         print("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
                 else:  # image not corrupt

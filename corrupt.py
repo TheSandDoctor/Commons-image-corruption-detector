@@ -3,12 +3,13 @@
 
 from __future__ import absolute_import
 
-import traceback, sys, re, configparser, json, pathlib
+#import traceback, sys, re, configparser, json, pathlib
 
 from datetime import datetime, timezone
 from image_corruption_utils import *
-from database_stuff import store_image, have_seen_image, get_next_month
+from database_stuff import store_image, have_seen_image, gen_nom_date
 from PIL import UnidentifiedImageError
+from DayCount import EDayCount
 import pywikibot
 import pwb_wrappers
 import os
@@ -17,13 +18,13 @@ number_saved = 0
 
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
-def save_page(site, page, text, edit_summary, is_bot_edit=True, is_minor=True):
-    if not call_home(site, "full_scan"):
-        raise ValueError("Kill switch on-wiki is false. Terminating program.")
-    retry_apierror(
-        lambda:
-        page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
-    )
+# def save_page(site, page, text, edit_summary, is_bot_edit=True, is_minor=True):
+#     if not call_home(site, "full_scan"):
+#         raise ValueError("Kill switch on-wiki is false. Terminating program.")
+#     retry_apierror(
+#         lambda:
+#         page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
+#     )
 
 
 def process_file(image_page, site):
@@ -34,7 +35,7 @@ def process_file(image_page, site):
         with open('./Example' + ext, 'wb') as fd:
             image_page.download(fd)
 
-        hash_result, img_hash = verifyHash(site, "./Example" + ext, image_page)
+        hash_result, img_hash = verify_hash(site, "./Example" + ext, image_page)
         if not hash_result:
             if download_attempts >= 10:
                 failed = 1
@@ -56,12 +57,11 @@ def process_file(image_page, site):
             raise
     del ext  # no longer a needed variable
     if result:  # image corrupt
-        nom_date = str(get_next_month(30)).split('/')
         pwb_wrappers.tag_page(image_page,
                               "{{TSB image identified corrupt|" +
                               datetime.now(
-                                  timezone.utc).strftime("%m/%d/%Y") + "|day=" + nom_date[1] + "|month=" +
-                              nom_date[0] + "|year=" + nom_date[2] + "}}",
+                                  timezone.utc).strftime("%m/%d/%Y") + "|day=" + gen_nom_date()[1] + "|month=" +
+                              gen_nom_date()[0] + "|year=" + gen_nom_date()[2] + "}}",
                               "Image detected as corrupt, tagging.")
         store_image(image_page.title(), True, img_hash=img_hash)  # store in database
         print("Saved page and logged in database")
@@ -70,7 +70,7 @@ def process_file(image_page, site):
         print(number_saved)
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
-            notify_user(site, image_page, "30 days", "full_scan")
+            notify_user(site, image_page, EDayCount.DAYS_30, "full_scan")
         except:  # TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
     else:  # image not corrupt
@@ -90,7 +90,7 @@ def run(utils):
             break  # FIXME: End section
         print("Working with: " + str(page.title()))
         # print(number_saved)
-        text = page.text
+        #text = page.text
         try:
             if have_seen_image(site, page.title()):
                 print("Found duplicate, no need to check")

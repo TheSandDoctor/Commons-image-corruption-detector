@@ -1,4 +1,4 @@
-from image_corruption_utils import getLocalHash
+from image_corruption_utils import get_local_hash
 
 print("Local hash of examples/Test.jpg")
-print(getLocalHash("./examples/Test.jpg"))
+print(get_local_hash("./examples/Test.jpg"))

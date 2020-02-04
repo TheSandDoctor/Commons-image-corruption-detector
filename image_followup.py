@@ -40,7 +40,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
         with open("./Example3" + ext, "wb") as fd:
             image_page.download(fd)
 
-        hash_result, img_hash = verifyHash(site, "./Example3" + ext, image_page)
+        hash_result, img_hash = verify_hash(site, "./Example3" + ext, image_page)
         if not hash_result:
             if download_attempts >= 10:
                 failed = 1

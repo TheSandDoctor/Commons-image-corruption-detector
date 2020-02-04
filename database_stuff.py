@@ -1,7 +1,7 @@
 from __future__ import print_function
 from datetime import date, datetime, timedelta, timezone
 import mysql.connector as mariadb
-from image_corruption_utils import getRemoteHash
+from image_corruption_utils import get_remote_hash
 import config
 import manapi
 
@@ -125,7 +125,7 @@ def have_seen_image(site, title, page_id=None):
         page_id = manapi.getPageID(title)
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
-    img_hash = getRemoteHash(site, title)
+    img_hash = get_remote_hash(site, title)
     sql = "SELECT title FROM images_viewed WHERE page_id=%s AND img_hash=%s"
     try:
         cursor.execute(sql, (page_id, img_hash))
