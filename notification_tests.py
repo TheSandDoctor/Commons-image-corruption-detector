@@ -19,5 +19,5 @@ pwb_wrappers.tag_page(page,
                       gen_nom_date()[0] + "|year=" + gen_nom_date()[2] + "}}",
                       "Image detected as corrupt, tagging.")
 
-page = pywikibot.Page(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
+page = pywikibot.FilePage(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
 image_corruption_utils.notify_user(site, page, "30 days", "full_scan")

@@ -115,7 +115,7 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
     if not call_home(site, task_name):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
 
-    user, timestamp = getUploaderAndTimestamp(site, image)
+    user, timestamp = getUploaderAndTimestamp(site, image.title())
     tp = pywikibot.Page(site, "User talk:" + user)
     if task_name == 'full_scan' or task_name == 'monitor':
         msg = "{{subst:TSB corruption notification|user=" + str(user) + "|file=" + str(image.title()) + "|time=" + str(
