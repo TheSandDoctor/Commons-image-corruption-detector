@@ -21,4 +21,4 @@ pwb_wrappers.tag_page(page,
                       "Image detected as corrupt, tagging.")
 
 page = pywikibot.FilePage(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
-image_corruption_utils.notify_user(site, page, EDayCount.DAYS_30.value, "full_scan")
+image_corruption_utils.notify_user(site, page, EDayCount.DAYS_30.value, "full_scan", minor=False)
