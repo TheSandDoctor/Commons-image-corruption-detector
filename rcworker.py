@@ -159,7 +159,7 @@ def run_worker():
                     number_saved += 1  # FIXME: This MUST be removed once trials done and approved
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
-                        notify_user(site, file_page, EDayCount.DAYS_7.value, "monitor", minor=False)
+                        notify_user(site, file_page, EDayCount.DAYS_7, "monitor", minor=False)
                     except:  # TODO: Add record to database about failed notification?
                         print("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
                 else:  # image not corrupt
