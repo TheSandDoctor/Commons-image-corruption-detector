@@ -176,7 +176,7 @@ def run_worker():
 
 
 def main():
-    pywikibot.handleArgs()
+    pywikibot.handle_args()
     run_worker()
 
 
