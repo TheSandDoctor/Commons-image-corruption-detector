@@ -117,7 +117,7 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
     """
     if not call_home(site, task_name):
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
-    if issubclass(time_duration, Enum):
+    if isinstance(time_duration, Enum):
         time_duration = time_duration.value
 
     user, timestamp = get_uploader_and_timestamp(site, image.title())
