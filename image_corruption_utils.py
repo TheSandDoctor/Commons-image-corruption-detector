@@ -1,11 +1,14 @@
+from enum import Enum
+
 from PIL import Image
 from PIL import ImageFile
 from PIL import UnidentifiedImageError
 from pywikibot import UnicodeType
 import json
-#import mysql.connector
+# import mysql.connector
 import hashlib
 import pywikibot
+import mwparserfromhell
 from pwb_wrappers import retry_apierror
 
 ImageFile.MAXBLOCK = 1
@@ -145,3 +148,34 @@ def call_home(site_obj, key):
     data = json.loads(text)["run"]["corrupt_image_finder"][key]
     return str(data) == str(True)
 
+
+def allow_bots(text, user):
+    """
+    This is a modified method from https://en.wikipedia.org/wiki/Template:Bots#Python .
+    In short: it should only follow exclusion compliance when it is specifically disallowed.
+    This is because all images should be checked but images that it for some reason gets
+    consistently incorrect need some sort of method to ensure that it does not touch them again.
+    :param text: page text to search
+    :param user: bot to search for
+    :return: whether or not bot allowed to edit page
+    """
+    user = user.lower().strip()
+    text = mwparserfromhell.parse(text)
+    for tl in text.filter_templates():
+        if tl.name.matches(['bots', 'nobots']):
+            break
+    else:
+        return True
+    for param in tl.params:
+        bots = [x.lower().strip() for x in param.value.split(",")]
+        #if param.name == 'allow':
+            #if ''.join(bots) == 'none': return False
+        #    for bot in bots:
+        #        if bot in (user, 'all'):
+         #           return True
+        if param.name == 'deny':
+            if ''.join(bots) == 'none': return True
+            for bot in bots:
+                if bot in (user):
+                    return False
+    return True

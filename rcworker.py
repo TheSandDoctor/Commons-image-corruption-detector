@@ -14,7 +14,7 @@ from pywikibot.throttle import Throttle
 
 import pwb_wrappers
 from database_stuff import store_image, get_next_month
-from image_corruption_utils import image_is_corrupt, notify_user
+from image_corruption_utils import image_is_corrupt, notify_user, allow_bots
 from config import REDIS_KEY
 from PIL import UnidentifiedImageError
 from redis import Redis
@@ -60,6 +60,10 @@ def run_worker():
             # change = json.loads(change)
             #file_page = pywikibot.FilePage(site, change['title'])
             file_page = pywikibot.FilePage(site, change.title)
+
+            if not allow_bots(file_page.text, "TheSandBot"):
+                print("Not to edit " + file_page.title())
+                continue
 
             if not file_page.exists():
                 #print(pywikibot.warning('File page does not exist ' + str(change['title'])))

@@ -95,6 +95,9 @@ def run(utils):
             if have_seen_image(site, page.title()):
                 print("Found duplicate, no need to check")
                 continue
+            if not allow_bots(page.text, "TheSandBot"):
+                print("Not to edit " + page.title())
+                continue
             try:
                 process_file(page, site)
             except UnidentifiedImageError as e:  # File not an image. Best to just continue

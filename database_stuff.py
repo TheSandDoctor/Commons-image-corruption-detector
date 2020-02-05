@@ -1,7 +1,7 @@
 from __future__ import print_function
 from datetime import date, datetime, timedelta, timezone
 import mysql.connector as mariadb
-from image_corruption_utils import get_remote_hash
+from image_corruption_utils import get_remote_hash, allow_bots
 import config
 import manapi
 

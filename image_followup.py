@@ -30,6 +30,11 @@ def notify_and_tag(site, filepage, days):
 
 def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     image_page = pywikibot.Page(site, image)  # does this need to be FilePage?
+
+    if not allow_bots(image_page.text, "TheSandBot"):
+        print("Not to edit " + image_page.title())
+        return
+
     text = failed = img_hash = None
     _, ext = os.path.splitext(image_page.title())  # get filetype
     download_attempts = 0
