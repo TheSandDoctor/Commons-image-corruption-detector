@@ -9,7 +9,7 @@ from database_stuff import gen_nom_date
 import pwb_wrappers
 from datetime import datetime, timezone
 import image_corruption_utils
-from DayCount import EDayCount
+from EUtils import EDayCount, EJobType
 
 site = pywikibot.Site()
 page = pywikibot.Page(site, u"User talk:TheSandDoctor")
@@ -21,7 +21,7 @@ pwb_wrappers.tag_page(page,
                       "Image detected as corrupt, tagging.")
 
 page = pywikibot.FilePage(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
-image_corruption_utils.notify_user(site, page, EDayCount.DAYS_30, "full_scan", minor=False)
+image_corruption_utils.notify_user(site, page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
 
 if not image_corruption_utils.allow_bots(page.text, "TheSandBot"):
     print("Not allowed")

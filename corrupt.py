@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from image_corruption_utils import *
 from database_stuff import store_image, have_seen_image, gen_nom_date
 from PIL import UnidentifiedImageError
-from DayCount import EDayCount
+from EUtils import EDayCount, EJobType
 import pywikibot
 import pwb_wrappers
 import os
@@ -70,7 +70,7 @@ def process_file(image_page, site):
         print(number_saved)
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
-            notify_user(site, image_page, EDayCount.DAYS_30, "full_scan", minor=False)
+            notify_user(site, image_page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
         except:  # TODO: Add record to database about failed notification?
             print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
     else:  # image not corrupt

@@ -119,6 +119,8 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
         raise ValueError("Kill switch on-wiki is false. Terminating program.")
     if isinstance(time_duration, Enum):
         time_duration = time_duration.value
+    if isinstance(task_name, Enum):
+        task_name = task_name.value
 
     user, timestamp = get_uploader_and_timestamp(site, image.title())
     tp = pywikibot.Page(site, "User talk:" + user)
