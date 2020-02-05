@@ -115,12 +115,12 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
     :param day_count: passed number of days in grace period (string, default:None)
     :return: None
     """
-    if not call_home(site, task_name):
-        raise ValueError("Kill switch on-wiki is false. Terminating program.")
     if isinstance(time_duration, Enum):
         time_duration = time_duration.value
     if isinstance(task_name, Enum):
         task_name = task_name.value
+    if not call_home(site, task_name):
+        raise ValueError("Kill switch on-wiki is false. Terminating program.")
 
     user, timestamp = get_uploader_and_timestamp(site, image.title())
     tp = pywikibot.Page(site, "User talk:" + user)
