@@ -52,7 +52,7 @@ def run_worker():
         site.unlock_page = lambda *args, **kwargs: None  # noop
 
         redis = Redis(host="tools-redis")
-
+        global number_saved  # FIXME: This MUST be removed once trials done and approved
         while True:
             if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved
                 break  # FIXME: This MUST be removed once trials done and approved
@@ -155,7 +155,6 @@ def run_worker():
                     #store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
                     print("Saved page and logged in database")
-                    global number_saved  # FIXME: This MUST be removed once trials done and approved
                     number_saved += 1  # FIXME: This MUST be removed once trials done and approved
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
