@@ -42,7 +42,10 @@ def run_watcher():
         ):
             #redis.rpush(REDIS_KEY, json.dumps(change))
             #redis.rpush(REDIS_KEY, ImageObj(json.loads(change)))
-            print(change['title'])
+            if change['title'] == "WARNING: Empty message found.":
+                print("CAUGHT: " + change['title'])
+            else:
+                print(change['title'])
 
     pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
 
