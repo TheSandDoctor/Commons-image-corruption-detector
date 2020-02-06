@@ -47,7 +47,7 @@ def run_watcher():
 
 
 def main():
-    pywikibot.handleArgs()
+    pywikibot.handle_args()
     run_watcher()
 
 
