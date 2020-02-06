@@ -51,7 +51,7 @@ def run_worker():
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
 
-        redis = Redis(host="tools-redis")
+        redis = Redis(host="localhost")
         global number_saved  # FIXME: This MUST be removed once trials done and approved
         while True:
             if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved

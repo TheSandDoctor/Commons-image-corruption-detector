@@ -30,7 +30,7 @@ from Image import ImageObj
 
 def run_watcher():
     site = pywikibot.Site(user="TheSandBot")
-    redis = Redis(host="tools-redis")
+    redis = Redis(host="localhost")
 
     rc = site_rc_listener(site)
     for change in rc:
