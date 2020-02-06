@@ -41,7 +41,8 @@ def run_watcher():
             change['log_type'] == 'upload'
         ):
             #redis.rpush(REDIS_KEY, json.dumps(change))
-            redis.rpush(REDIS_KEY, ImageObj(json.loads(change)))
+            #redis.rpush(REDIS_KEY, ImageObj(json.loads(change)))
+            print(change['title'])
 
     pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
 
