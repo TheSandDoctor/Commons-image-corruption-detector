@@ -138,7 +138,7 @@ def run_worker():
                 try:
                     corrupt_result = image_is_corrupt(path)
                 except UnidentifiedImageError as e:
-                    logger.debug("Not an image (or at very least not currently supported by PIL)")
+                    logger.debug(change.title + " ::: is not an image (or at very least not currently supported by PIL)")
                     os.remove(path)  # file not an image
                     # Previously the idea was to just raise the error,
                     # but since this is a constant running loop, just move on
