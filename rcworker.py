@@ -60,7 +60,7 @@ def run_worker():
             # change = json.loads(change)
             #file_page = pywikibot.FilePage(site, change['title'])
             file_page = pywikibot.FilePage(site, change.title)
-
+            print("We've got a page")
             if not allow_bots(file_page.text, "TheSandBot"):
                 print("Not to edit " + file_page.title())
                 continue
