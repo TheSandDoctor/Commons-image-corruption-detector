@@ -53,6 +53,9 @@ def run_worker():
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
         logger = logging.getLogger(__name__)
+        handler = logging.FileHandler('rcworker.log')
+        handler.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
         redis = Redis(host="localhost")
         global number_saved  # FIXME: This MUST be removed once trials done and approved
         while True:
