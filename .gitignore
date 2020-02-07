@@ -2,6 +2,7 @@
 .idea/
 credentials.txt
 user-config.py
+user-password.py
 config.py
 pywikibot.lwp
 throttle.ctrl
