@@ -26,11 +26,14 @@ def tag_page(filepage, template, summary, minor=True):
         return
 
     # Make sure no edit conflicts happen here
-    retry_apierror(
-        lambda:
-        filepage.save(prependtext=template + '\n',
-                      summary=summary, minor=minor, botflag=True, force=True)
-    )
+    try:
+        retry_apierror(
+            lambda:
+            filepage.save(prependtext=template + '\n',
+                          summary=summary, minor=minor, botflag=True, force=True)
+        )
+    except pywikibot.exceptions.LockedPage as e:
+        print(e.message)
 
 
 def retry_apierror(f):

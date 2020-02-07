@@ -80,11 +80,14 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
         for template in code.filter_templates():
             if template.name.matches("TSB image identified corrupt"):
                 code.remove(template)  # template no longer needed
-        pwb_wrappers.retry_apierror(
-            lambda:
-            image_page.save(text=str(code),
-                            summary=edit_summary, minor=False, botflag=True, force=True)
-        )
+        try:
+            pwb_wrappers.retry_apierror(
+                lambda:
+                image_page.save(text=str(code),
+                                summary=edit_summary, minor=False, botflag=True, force=True)
+            )
+        except pywikibot.exceptions.LockedPage as e:
+            print(e.message)
         # update database entry to set image as no longer corrupt and nullify to_delete_nom
         update_entry(str(image_page.title()), False, "NULL", img_hash)
 

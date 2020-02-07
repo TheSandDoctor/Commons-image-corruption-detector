@@ -24,7 +24,10 @@ site = pywikibot.Site()
 #page = pywikibot.FilePage(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
 #image_corruption_utils.notify_user(site, page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
 page = pywikibot.Page(site, u'User talk:TheSandBot/ccc_tests')
-retry_apierror(lambda: page.save(appendtext="Testing testing", summary="This is a test edit", minor=False, botflag=True, force=True))
+try:
+    retry_apierror(lambda: page.save(appendtext="Testing testing", summary="This is a test edit", minor=False, botflag=True, force=True))
+except pywikibot.exceptions.LockedPage as e:
+    print(e.message)
 #if not image_corruption_utils.allow_bots(page.text, "TheSandBot"):
 #    print("Not allowed")
 #else:
