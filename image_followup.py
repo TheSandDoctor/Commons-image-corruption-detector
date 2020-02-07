@@ -88,7 +88,8 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                                 summary=edit_summary, minor=False, botflag=True, force=True)
             )
         except pywikibot.exceptions.LockedPage as e:
-            print(image_page.title() + " " + e.message)
+            print(image_page.title())
+            print(e.message)
         # update database entry to set image as no longer corrupt and nullify to_delete_nom
         update_entry(str(image_page.title()), False, "NULL", img_hash)
 

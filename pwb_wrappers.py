@@ -34,7 +34,8 @@ def tag_page(filepage, template, summary, minor=True):
                           summary=summary, minor=minor, botflag=True, force=True)
         )
     except pywikibot.exceptions.LockedPage as e:
-        print(filepage.title() + " " + e.message)
+        print(filepage.title())
+        print(e.message)
 
 
 def retry_apierror(f):

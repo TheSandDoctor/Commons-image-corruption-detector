@@ -141,7 +141,8 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
     try:
         retry_apierror(lambda: tp.save(appendtext=msg, summary=summary, minor=minor, botflag=True, force=True))
     except pywikibot.exceptions.LockedPage as e:
-        print(tp.title() + " " + e.message)
+        print(tp.title())
+        print(e.message)
 
 
 def call_home(site_obj, key):
