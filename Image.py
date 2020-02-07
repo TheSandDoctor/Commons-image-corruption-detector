@@ -1,6 +1,5 @@
 import pywikibot
 
-
 class ImageObj:
 
     def __init__(self, change):
