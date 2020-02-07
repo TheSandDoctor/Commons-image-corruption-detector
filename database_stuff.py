@@ -146,6 +146,7 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, wasFix
     :param to_delete_nom: date string for when to nominate for deletion (NULL if not corrupt)
     :param img_hash: hash of the image to compare with the stored database value
     :param page_id: page id (optional)
+    :param wasFixed: whether image was fixed
     :return: None
     """
     if page_id is None:
