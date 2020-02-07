@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-import datetime
+from datetime import timezone,datetime
 import json
 import os
 import shutil
@@ -144,24 +144,24 @@ def run_worker():
                     # but since this is a constant running loop, just move on
                     # to the next file (once local removed)
                     continue
-
                 if corrupt_result:
-                    nom_date = str(get_next_month(7)).split('/')
-                    pwb_wrappers.tag_page(file_page,
-                                          "{{TSB image identified corrupt|"
-                                          + datetime.now(
-                                              datetime.timezone.utc).strftime("%m/%d/%Y") + "|day=" +
-                                          nom_date[1] + "|month=" + nom_date[0] + "|year=" + nom_date[2] + "}}",
-                                          "Image detected as corrupt, tagging.")
-                    #store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
-                    store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
-                    logger.info("Saved page and logged in database")
-                    number_saved += 1  # FIXME: This MUST be removed once trials done and approved
-                    # Notify the user that the file needs updating
-                    try:  # TODO: Add record to database about successful notification?
-                        notify_user(site, file_page, EDayCount.DAYS_7, EJobType.MONITOR, minor=False)
-                    except:  # TODO: Add record to database about failed notification?
-                        logger.error("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
+                    handle_result(site, file_page, change, logger)
+                    # nom_date = str(get_next_month(7)).split('/')
+                    # pwb_wrappers.tag_page(file_page,
+                    #                       "{{TSB image identified corrupt|"
+                    #                       + datetime.now(
+                    #                           timezone.utc).strftime("%m/%d/%Y") + "|day=" +
+                    #                       nom_date[1] + "|month=" + nom_date[0] + "|year=" + nom_date[2] + "}}",
+                    #                       "Image detected as corrupt, tagging.")
+                    # #store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
+                    # store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
+                    # logger.info("Saved page and logged in database")
+                    # number_saved += 1  # FIXME: This MUST be removed once trials done and approved
+                    # # Notify the user that the file needs updating
+                    # try:  # TODO: Add record to database about successful notification?
+                    #     notify_user(site, file_page, EDayCount.DAYS_7, EJobType.MONITOR, minor=False)
+                    # except:  # TODO: Add record to database about failed notification?
+                    #     logger.error("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
                 else:  # image not corrupt
                     #store_image(file_page.title(), False, img_hash=img_hash)  # store in database
                     store_image(file_page.title(), False, img_hash=change.hash)  # store in database
@@ -170,12 +170,44 @@ def run_worker():
             except Exception:
                 traceback.print_exc()
             finally:
-                os.remove(path)
+                if os.path.exists(path):
+                    os.remove(path)
 
         pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
     finally:
         shutil.rmtree(tmpdir)
 
+
+def handle_result(site, file_page, change, logger):
+    global number_saved
+    tag_page(file_page)
+    #nom_date = str(get_next_month(7)).split('/')
+    #pwb_wrappers.tag_page(file_page,
+     #                     "{{TSB image identified corrupt|"
+      #                    + datetime.now(
+       #                       timezone.utc).strftime("%m/%d/%Y") + "|day=" +
+        #                  nom_date[1] + "|month=" + nom_date[0] + "|year=" + nom_date[2] + "}}",
+         #                 "Image detected as corrupt, tagging.")
+    # store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
+    store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
+    logger.info("Saved page and logged in database")
+    number_saved += 1  # FIXME: This MUST be removed once trials done and approved
+    # Notify the user that the file needs updating
+    try:  # TODO: Add record to database about successful notification?
+        notify_user(site, file_page, EDayCount.DAYS_7, EJobType.MONITOR, minor=False)
+    except:  # TODO: Add record to database about failed notification?
+        logger.error("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
+
+
+def tag_page(file_page):
+    nom_date = str(get_next_month(7)).split('/')
+    pwb_wrappers.tag_page(file_page,
+                          "{{TSB image identified corrupt|"
+                          + datetime.now(
+                              timezone.utc).strftime("%m/%d/%Y") + "|day=" +
+                          nom_date[1] + "|month=" + nom_date[0] + "|year=" + nom_date[2] + "}}",
+                          "Image detected as corrupt, tagging.")
+    #store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
 
 def main():
     pywikibot.handle_args()
