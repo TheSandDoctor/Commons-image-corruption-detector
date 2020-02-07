@@ -57,8 +57,8 @@ def run_worker():
         while True:
             if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved
                 break  # FIXME: This MUST be removed once trials done and approved
-            _, pickle = redis.blpop(REDIS_KEY)
-            change = pickle.loads(pickle) # Need to unpickle and build object once more - T99
+            _, picklemsg = redis.blpop(REDIS_KEY)
+            change = pickle.loads(picklemsg) # Need to unpickle and build object once more - T99
             # change = json.loads(change)
             #file_page = pywikibot.FilePage(site, change['title'])
             file_page = pywikibot.FilePage(site, change.title)
