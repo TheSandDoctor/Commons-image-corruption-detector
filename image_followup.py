@@ -91,7 +91,7 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
             print(image_page.title())
             print(e.message)
         # update database entry to set image as no longer corrupt and nullify to_delete_nom
-        update_entry(str(image_page.title()), False, None, img_hash, wasFixed=True)
+        update_entry(str(image_page.title()), False, None, img_hash, was_fixed=True)
 
 
 def main():

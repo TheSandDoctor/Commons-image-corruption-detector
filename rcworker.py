@@ -140,6 +140,7 @@ def run_worker():
                 except UnidentifiedImageError as e:
                     logger.debug(change.title + " ::: is not an image (or at very least not currently supported by PIL)")
                     os.remove(path)  # file not an image
+                    store_image(change.title, False, img_hash=change.hash, not_image=True)  # store in database
                     # Previously the idea was to just raise the error,
                     # but since this is a constant running loop, just move on
                     # to the next file (once local removed)

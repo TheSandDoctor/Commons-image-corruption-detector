@@ -7,13 +7,13 @@ import config
 import manapi
 
 insert_image = ("INSERT INTO images_viewed "
-                "(title, isCorrupt, date_scanned, to_delete_nom, hash, page_id) "
-                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s, %(hash)s, %(page_id)s)")
+                "(title, isCorrupt, date_scanned, to_delete_nom, hash, page_id, not_image) "
+                "VALUES (%(title)s, %(isCorrupt)s, %(date_scanned)s, %(to_delete_nom)s, %(hash)s, %(page_id)s, %(not_image)s)")
 
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                   "WHERE to_delete_nom = %s"}
 
-update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, wasFixed = %s WHERE page_id = %s"}
+update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, was_fixed = %s WHERE page_id = %s"}
 
 
 def get_next_month(day_count):
@@ -44,7 +44,7 @@ def calculate_difference(date_tagged):
     return (datetime.now(timezone.utc).date() - date_tagged).days
 
 
-def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None):
+def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_image=False):
     """
     Stores current image information (provided in header) into the database for this application.
     :param title: filename
@@ -53,20 +53,33 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None):
     :param page_id: page id (optional)
     :param day_count: how long a grace period pre-nomination if unresolved by then (default: 30 days, not stored
     if image isn't corrupt in the first place (database defaults to NULL if no value provided)
+    :param not_image: False if file is an image, true otherwise
     :return: None
     """
-    if page_id is None:
+    if page_id is None and not not_image:
         page_id = manapi.getPageID(title)
+
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
-    if isCorrupt:
+    if not_image:
+        image_data = {
+            'title': title,
+            'isCorrupt': isCorrupt,
+            'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
+            'to_delete_nom': None,
+            'hash': None,
+            'page_id': None,
+            'not_image': not_image
+        }
+    elif isCorrupt:
         image_data = {
             'title': title,
             'isCorrupt': isCorrupt,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': get_next_month(day_count),
             'hash': str(img_hash),
-            'page_id': int(page_id)
+            'page_id': int(page_id),
+            'not_image': not_image
         }
     else:
         image_data = {
@@ -75,7 +88,8 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None):
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': None,
             'hash': str(img_hash),
-            'page_id': int(page_id)
+            'page_id': int(page_id),
+            'not_image': not_image
         }
     try:
         cursor.execute(insert_image, image_data)
@@ -138,7 +152,7 @@ def have_seen_image(site, title, page_id=None):
     return msg
 
 
-def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, wasFixed=None):
+def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, was_fixed=None):
     """
     Updates existing entry in database. This is currently called in image_followup when an image has been changed.
     :param title: filename
@@ -146,7 +160,7 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, wasFix
     :param to_delete_nom: date string for when to nominate for deletion (NULL if not corrupt)
     :param img_hash: hash of the image to compare with the stored database value
     :param page_id: page id (optional)
-    :param wasFixed: whether image was fixed
+    :param was_fixed: whether image was fixed
     :return: None
     """
     if page_id is None:
@@ -154,7 +168,7 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, wasFix
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
-        cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, wasFixed, page_id))
+        cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, was_fixed, page_id))
         cnx.commit()
     except mariadb.Error as error:
         print("Error: {}".format(error))
