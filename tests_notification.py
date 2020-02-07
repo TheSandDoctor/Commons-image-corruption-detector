@@ -10,6 +10,7 @@ import pwb_wrappers
 from datetime import datetime, timezone
 import image_corruption_utils
 from EUtils import EDayCount, EJobType
+from pwb_wrappers import retry_apierror
 
 site = pywikibot.Site()
 #page = pywikibot.Page(site, u"User talk:TheSandDoctor")
@@ -20,10 +21,11 @@ site = pywikibot.Site()
     #                  gen_nom_date()[0] + "|year=" + gen_nom_date()[2] + "}}",
      #                 "Image detected as corrupt, tagging.")
 
-page = pywikibot.FilePage(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
+#page = pywikibot.FilePage(site,u'File:Rolling Stones crowd glowing cellphones 14 August 2019 Seattle.jpg')
 #image_corruption_utils.notify_user(site, page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
-
-if not image_corruption_utils.allow_bots(page.text, "TheSandBot"):
-    print("Not allowed")
-else:
-    print("Allowed")
+page = pywikibot.Page(site, u'User talk:TheSandBot/ccc_tests')
+retry_apierror(lambda: page.save(appendtext="Testing testing", summary="This is a test edit", minor=False, botflag=True, force=True))
+#if not image_corruption_utils.allow_bots(page.text, "TheSandBot"):
+#    print("Not allowed")
+#else:
+ #   print("Allowed")
