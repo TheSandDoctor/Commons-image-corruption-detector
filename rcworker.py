@@ -7,6 +7,7 @@ import tempfile
 import threading
 import traceback
 import uuid
+import logging
 
 import pywikibot
 from pywikibot.data.api import APIError
@@ -51,7 +52,7 @@ def run_worker():
         # locking to cause even more problems
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
-
+        logger = logging.getLogger(__name__)
         redis = Redis(host="localhost")
         global number_saved  # FIXME: This MUST be removed once trials done and approved
         while True:
@@ -59,17 +60,14 @@ def run_worker():
                 break  # FIXME: This MUST be removed once trials done and approved
             _, picklemsg = redis.blpop(REDIS_KEY)
             change = pickle.loads(picklemsg) # Need to unpickle and build object once more - T99
-            # change = json.loads(change)
-            #file_page = pywikibot.FilePage(site, change['title'])
             file_page = pywikibot.FilePage(site, change.title)
-            print("We've got a page")
+            logger.info(change.title)
             if not allow_bots(file_page.text, "TheSandBot"):
-                print("Not to edit " + file_page.title())
+                logger.critical("Not to edit " + file_page.title())
                 continue
 
             if not file_page.exists():
-                #print(pywikibot.warning('File page does not exist ' + str(change['title'])))
-                print(pywikibot.warning('File page does not exist ' + change.title))
+                logger.debug(pywikibot.warning('File page does not exist ' + change.title))
                 continue
 
             for i in range(8):
@@ -137,15 +135,13 @@ def run_worker():
                 try:
                     corrupt_result = image_is_corrupt(path)
                 except UnidentifiedImageError as e:
-                    print("Not an image (or at very least not currently supported by PIL)")
+                    logger.debug("Not an image (or at very least not currently supported by PIL)")
                     os.remove(path)  # file not an image
                     # Previously the idea was to just raise the error,
                     # but since this is a constant running loop, just move on
                     # to the next file (once local removed)
                     continue
 
-                #img_hash = str(change['log_params']['img_sha1'])
-                #img_hash = change.hash
                 if corrupt_result:
                     nom_date = str(get_next_month(7)).split('/')
                     pwb_wrappers.tag_page(file_page,
@@ -156,17 +152,17 @@ def run_worker():
                                           "Image detected as corrupt, tagging.")
                     #store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
                     store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
-                    print("Saved page and logged in database")
+                    logger.info("Saved page and logged in database")
                     number_saved += 1  # FIXME: This MUST be removed once trials done and approved
                     # Notify the user that the file needs updating
                     try:  # TODO: Add record to database about successful notification?
                         notify_user(site, file_page, EDayCount.DAYS_7, EJobType.MONITOR, minor=False)
                     except:  # TODO: Add record to database about failed notification?
-                        print("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
+                        logger.error("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
                 else:  # image not corrupt
                     #store_image(file_page.title(), False, img_hash=img_hash)  # store in database
                     store_image(file_page.title(), False, img_hash=change.hash)  # store in database
-                    print(file_page.title() + " :Not corrupt. Stored")
+                    logger.info(file_page.title() + " :Not corrupt. Stored")
 
             except Exception:
                 traceback.print_exc()
@@ -180,6 +176,7 @@ def run_worker():
 
 def main():
     pywikibot.handle_args()
+    logging.basicConfig(level=logging.INFO)
     run_worker()
 
 
