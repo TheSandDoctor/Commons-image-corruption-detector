@@ -41,12 +41,7 @@ def run_watcher():
             change['log_type'] == 'upload'
         ):
             #redis.rpush(REDIS_KEY, json.dumps(change))
-            #redis.rpush(REDIS_KEY, ImageObj(json.loads(change)))
-            if change['title'] == "WARNING: Empty message found.":
-                print("CAUGHT: " + change['title'])
-            else:
-                print(change['title'])
-
+            redis.rpush(REDIS_KEY, ImageObj(json.dumps(change)))
     pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
 
 
