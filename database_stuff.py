@@ -13,7 +13,7 @@ insert_image = ("INSERT INTO images_viewed "
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                   "WHERE to_delete_nom = %s"}
 
-update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s WHERE page_id = %s"}
+update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, wasFixed = %s WHERE page_id = %s"}
 
 
 def get_next_month(day_count):
@@ -138,7 +138,7 @@ def have_seen_image(site, title, page_id=None):
     return msg
 
 
-def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None):
+def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, wasFixed=None):
     """
     Updates existing entry in database. This is currently called in image_followup when an image has been changed.
     :param title: filename
@@ -153,7 +153,7 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None):
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
-        cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, page_id))
+        cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, wasFixed, page_id))
         cnx.commit()
     except mariadb.Error as error:
         print("Error: {}".format(error))
