@@ -164,6 +164,7 @@ def run_worker():
                 else:  # image not corrupt
                     #store_image(file_page.title(), False, img_hash=img_hash)  # store in database
                     store_image(file_page.title(), False, img_hash=change.hash)  # store in database
+                    print(file_page.title() + " :Not corrupt. Stored")
 
             except Exception:
                 traceback.print_exc()
