@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 # TODO: Should the corruption checking methods etc be forked into their own
 # file (for reuse in others)?
 

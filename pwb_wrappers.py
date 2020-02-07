@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import pywikibot
 from pywikibot.data.api import APIError
 

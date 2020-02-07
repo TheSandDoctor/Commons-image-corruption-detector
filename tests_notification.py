@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
 Purpose of this file is to test the user notification features to ensure that they work properly as expected.
 This is deliberately testing using the TheSandDoctor talk page on Wikimedia Commons to ensure minimal disruption to

@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 # Purpose of this file is to follow up with any tagged images
 # tagged images are tagged with a template that adds them to a category.
 # The template that adds the images to the category has an unnamed parameter
