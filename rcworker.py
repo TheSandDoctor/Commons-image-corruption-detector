@@ -24,7 +24,6 @@ from Image import ImageObj
 from EUtils import EDayCount, EJobType
 import pickle
 
-number_saved = 0
 logger = None
 
 def retry_apierror(f):
@@ -56,10 +55,7 @@ def run_worker():
 
         redis = Redis(host="localhost")
 
-        global number_saved  # FIXME: This MUST be removed once trials done and approved
         while True:
-            if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved
-                break  # FIXME: This MUST be removed once trials done and approved
             _, picklemsg = redis.blpop(REDIS_KEY)
             change = pickle.loads(picklemsg) # Need to unpickle and build object once more - T99
             file_page = pywikibot.FilePage(site, change.title)
@@ -180,7 +176,6 @@ def run_worker():
 
 
 def handle_result(site, file_page, change, logger):
-    global number_saved
     tag_page(file_page)
     #nom_date = str(get_next_month(7)).split('/')
     #pwb_wrappers.tag_page(file_page,
@@ -192,11 +187,10 @@ def handle_result(site, file_page, change, logger):
     # store_image(file_page.title(), True, img_hash=img_hash, day_count=7)  # store in database
     store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
     logger.info("Saved page and logged in database")
-    number_saved += 1  # FIXME: This MUST be removed once trials done and approved
     # Notify the user that the file needs updating
     try:  # TODO: Add record to database about successful notification?
         notify_user(site, file_page, EDayCount.DAYS_7, EJobType.MONITOR, minor=False)
-    except:  # TODO: Add record to database about failed notification?
+    except:
         logger.error("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
 
 
