@@ -29,3 +29,4 @@ if __name__ == '__main__':
     test("./BSicon_.svg")
     test("./River_GK_rojo_.png")
     test("./TSB_total_edits_(lifetime)_Dec_19_2018.png")
+    test("./Handschoenen_(paar)_en_beschrijving_op_papier._objectnr_KA_15684.13.tif")
