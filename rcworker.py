@@ -8,6 +8,7 @@ import threading
 import traceback
 import uuid
 import logging
+from logging.config import fileConfig
 
 import pywikibot
 from pywikibot.data.api import APIError
@@ -52,11 +53,11 @@ def run_worker():
         # locking to cause even more problems
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
+
+        fileConfig('logging_config.ini')
         logger = logging.getLogger(__name__)
-        handler = logging.FileHandler('rcworker.log')
-        handler.setLevel(logging.DEBUG)
-        logger.addHandler(handler)
         redis = Redis(host="localhost")
+
         global number_saved  # FIXME: This MUST be removed once trials done and approved
         while True:
             if number_saved >= 10:  # FIXME: This MUST be removed once trials done and approved
@@ -212,7 +213,6 @@ def tag_page(file_page):
 
 def main():
     pywikibot.handle_args()
-    logging.basicConfig(level=logging.INFO)
     run_worker()
 
 

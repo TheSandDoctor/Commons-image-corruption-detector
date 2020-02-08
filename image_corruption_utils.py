@@ -10,10 +10,14 @@ import json
 import hashlib
 import pywikibot
 import mwparserfromhell
+import logging
+from logging.config import fileConfig
 from pwb_wrappers import retry_apierror
 
 ImageFile.MAXBLOCK = 1
 
+fileConfig('logging_config.ini')
+logger = logging.getLogger(__name__)
 
 def image_is_corrupt(f):
     """
@@ -27,14 +31,13 @@ def image_is_corrupt(f):
     try:
         image = Image.open(f)
         image.tobytes()
-        print("Works")
+        logger.debug(f + " ::Image conversion successful")
         return False
     except UnidentifiedImageError as e:
-        print("Not an image")
+        logger.info(f + " ::Not an image we can deal with")
         raise
     except Exception as e2:
-        print("Corrupt\n")  # If we get this far, image is corrupt
-        # print(e)
+        logger.info(f + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
 
 
@@ -131,18 +134,17 @@ def notify_user(site, image, time_duration, task_name, minor=True, day_count=Non
         msg += "|time_duration=" + str(time_duration) + "}} ~~~~"
 
         summary = "Notify about corrupt image [[" + str(image.title()) + "]]"
-        print("Notification of corruption of " + str(image.title()))
+        logger.info("Notification of corruption of " + str(image.title()))
     else:  # if task_name == 'followup':
         msg = "{{subst:TSB corruption CSD notification|user=" + str(user) + "|file=" + str(
             image.title()) + "|time_duration=" + str(day_count) + "}} ~~~~"
         summary = "Nominating corrupt file for deletion - passed " + str(day_count) + " day grace period."
-        print("Notification of CSD nomination of " + str(image.title()))
+        logger.info("Notification of CSD nomination of " + str(image.title()))
 
     try:
         retry_apierror(lambda: tp.save(appendtext=msg, summary=summary, minor=minor, botflag=True, force=True))
     except pywikibot.exceptions.LockedPage as e:
-        print(tp.title())
-        print(e.message)
+        logger.error(tp.title() + " :: " + e.message)
 
 
 def call_home(site_obj, key):

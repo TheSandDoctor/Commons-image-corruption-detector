@@ -5,6 +5,11 @@ import mysql.connector as mariadb
 from image_corruption_utils import get_remote_hash, allow_bots
 import config
 import manapi
+import logging
+from logging.config import fileConfig
+
+fileConfig('logging_config.ini')
+logger = logging.getLogger(__name__)
 
 insert_image = ("INSERT INTO images_viewed "
                 "(title, isCorrupt, date_scanned, to_delete_nom, hash, page_id, not_image) "
