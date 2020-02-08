@@ -1,5 +1,8 @@
 # -*- coding: UTF-8 -*-
 import pywikibot
+import logging
+from logging.config import fileConfig
+
 
 class ImageObj:
 
@@ -13,6 +16,8 @@ class ImageObj:
         self.gen_timestamp = change['timestamp']
         self.hash = str(change['log_params']['img_sha1'])
         self.isCorrupt = False
+        fileConfig('logging_config.ini')
+        self.logger = logging.getLogger(__name__)
 
     def getRevision(self, file_page):
         """
@@ -25,13 +30,19 @@ class ImageObj:
         except KeyError:
             try:
                 # From rcbacklog
+                self.logger.warning("KeyError1 has occurred")
                 revision = file_page.get_file_history()[pywikibot.Timestamp.fromISOformat(self.log_timestamp)]
             except KeyError:
                 try:
+                    self.logger.warning("KeyError2 has occurred")
+#TODO: add check if code ever gets here
                     revision = file_page.get_file_history()[pywikibot.Timestamp.fromtimestamp(self.gen_timestamp)]
                 except KeyError:
                     revision = file_page.latest_file_info
                     pywikibot.warning(
                         'Cannot fetch specified revision, falling back to '
                         'latest revision.')
+        #except ValueError:
+         #   pass
+
         return revision
