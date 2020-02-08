@@ -27,7 +27,7 @@ class ImageObj:
         """
         try:
             revision = file_page.get_file_history()[pywikibot.Timestamp.fromtimestampformat(self.log_timestamp)]
-        except KeyError:
+        except (KeyError, ValueError):
             try:
                 # From rcbacklog
                 self.logger.warning("KeyError1 has occurred")
