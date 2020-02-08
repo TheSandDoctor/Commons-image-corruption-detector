@@ -25,7 +25,7 @@ from EUtils import EDayCount, EJobType
 import pickle
 
 number_saved = 0
-
+logger = None
 
 def retry_apierror(f):
     # https://github.com/toolforge/embeddeddata/blob/5ecd31417a4c3c5d1be9c2a58f55a1665d9c767f/worker.py#L238
@@ -54,8 +54,6 @@ def run_worker():
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
 
-        fileConfig('logging_config.ini')
-        logger = logging.getLogger(__name__)
         redis = Redis(host="localhost")
 
         global number_saved  # FIXME: This MUST be removed once trials done and approved
@@ -65,6 +63,7 @@ def run_worker():
             _, picklemsg = redis.blpop(REDIS_KEY)
             change = pickle.loads(picklemsg) # Need to unpickle and build object once more - T99
             file_page = pywikibot.FilePage(site, change.title)
+            global logger
             logger.info(change.title)
             if not allow_bots(file_page.text, "TheSandBot"):
                 logger.critical("Not to edit " + file_page.title())
@@ -218,6 +217,12 @@ def main():
 
 if __name__ == "__main__":
     try:
+        fileConfig('logging_config.ini')
+        global logger
+        logger = logging.getLogger(__name__)
         main()
+    except KeyboardInterrupt:
+        logger.critical("Worker shutdown")
+        pass
     finally:
         pywikibot.stopme()

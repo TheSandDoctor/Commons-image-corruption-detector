@@ -24,12 +24,16 @@ from redis import Redis
 import pywikibot
 from pywikibot.comms.eventstreams import site_rc_listener
 import pickle
+import logging
+from logging.config import fileConfig
 
 from config import REDIS_KEY
 from Image import ImageObj
+logger = None
 
 
 def run_watcher():
+    global logger
     site = pywikibot.Site(user="TheSandBot")
     redis = Redis(host="localhost")
 
@@ -45,7 +49,7 @@ def run_watcher():
             #redis.rpush(REDIS_KEY, ImageObj(json.dumps(change)))
             pickled_img = pickle.dumps(ImageObj(change)) # Need to pickle to pass T99
             redis.rpush(REDIS_KEY, pickled_img)
-    pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
+    logger.critical("Exit - THIS SHOULD NOT HAPPEN")
 
 
 def main():
@@ -54,7 +58,12 @@ def main():
 
 
 if __name__ == "__main__":
+    fileConfig('logging_config.ini')
+    logger = logging.getLogger(__name__)
+
     try:
         main()
+    except KeyboardInterrupt:
+        logger.critical("Watcher shutdown")
     finally:
         pywikibot.stopme()

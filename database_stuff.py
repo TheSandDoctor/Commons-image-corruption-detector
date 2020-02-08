@@ -63,6 +63,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_imag
     """
     if page_id is None and not not_image:
         page_id = manapi.getPageID(title)
+    global logger
 
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
@@ -99,9 +100,9 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_imag
     try:
         cursor.execute(insert_image, image_data)
         cnx.commit()
-        print(cursor.rowcount, "record inserted.")
+        logger.debug(cursor.rowcount, "record inserted.")
     except mariadb.Error as error:
-        print("Error: {}".format(error))
+        logger.error("Error: {}".format(error))
     finally:
         cnx.close()
 
@@ -116,13 +117,14 @@ def get_expired_images():
            3rd element: to_delete_nom
     :return: images whose expiry date is today (UTC) as tuples.
     """
+    global logger
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
         cursor.execute(expired_images, datetime.now(timezone.utc).date().strftime('%m/%d/%Y'))
         raw = cursor.fetchall()  # returns tuples
     except mariadb.Error as error:
-        print("Error: {}".format(error))
+        logger.error("Error: {}".format(error))
     finally:
         cnx.close()
     return raw
@@ -143,6 +145,7 @@ def have_seen_image(site, title, page_id=None):
     """
     if page_id is None:
         page_id = manapi.getPageID(title)
+    global logger
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     img_hash = get_remote_hash(site, title)
@@ -151,7 +154,7 @@ def have_seen_image(site, title, page_id=None):
         cursor.execute(sql, (page_id, img_hash))
         msg = cursor.fetchone()
     except mariadb.Error as error:
-        print("Error: {}".format(error))
+        logger.error("Error: {}".format(error))
     finally:
         cnx.close()
     return msg
@@ -170,13 +173,15 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, was_fi
     """
     if page_id is None:
         page_id = manapi.getPageID(title)
+    global logger
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
         cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, was_fixed, page_id))
         cnx.commit()
     except mariadb.Error as error:
-        print("Error: {}".format(error))
+        logger.error("Error: {}".format(error))
     finally:
         cnx.close()
-    print("Record updated")
+    logger.info("Record updated")
+    logger.debug("Record updated -- " + str(page_id))
