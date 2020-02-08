@@ -11,12 +11,15 @@ for change in rc:
     if (
             change['type'] == 'log' and
             change['namespace'] == 6 and
-            change['log_type'] == 'upload' and count <= 5
+            change['log_type'] == 'upload' and count <= 4
     ):
         myl.append(ImageObj(change))
         count += 1
-    elif count > 5:
+    elif count > 4:
         break
 for i in myl:
-    print("gen: " + i.gen_timestamp)
-    print("log: " + i.log_timestamp)
+    page = pywikibot.FilePage(site, i.title)
+    print("gen: " + str(i.gen_timestamp))
+    print("log: " + str(i.log_timestamp))
+    rev = i.getRevision(page)
+    print(rev)
