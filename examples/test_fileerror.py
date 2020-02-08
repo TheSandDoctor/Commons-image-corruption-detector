@@ -8,8 +8,10 @@ def test(name):
       image = Image.open(f)
       image.tobytes()
       print(name + ": Works")
-    except Image.FileFormatError as e:
+    except Image.UnidentifiedImageError as e:
       print(name + ": Not an image")
+    except OSError:
+        print(name + ": Corrupt")
      # print(e)
     #  ex_type, ex_value, ex_traceback = sys.exc_info()
     #  trace_back = traceback.extract_tb(ex_traceback)

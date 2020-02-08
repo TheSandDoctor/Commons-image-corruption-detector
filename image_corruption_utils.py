@@ -19,6 +19,7 @@ ImageFile.MAXBLOCK = 1
 fileConfig('logging_config.ini')
 logger = logging.getLogger(__name__)
 
+
 def image_is_corrupt(f):
     """
     Check if image is corrupt. If an image is corrupt, it will fail .tobytes().
@@ -36,7 +37,7 @@ def image_is_corrupt(f):
     except UnidentifiedImageError as e:
         logger.info(f + " ::Not an image we can deal with")
         raise
-    except Exception as e2:
+    except OSError as e2:
         logger.info(f + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
 
