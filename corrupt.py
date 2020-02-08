@@ -14,8 +14,14 @@ from EUtils import EDayCount, EJobType
 import pywikibot
 import pwb_wrappers
 import os
+import tempfile
+import uuid
+from pywikibot.data.api import APIError
+from pywikibot.throttle import Throttle
+import shutil
+import traceback
 
-number_saved = 0
+logger = None
 
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
@@ -27,10 +33,109 @@ number_saved = 0
 #         page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
 #     )
 
+def process_file2(image_page):
+    tmpdir = None
+    global logger
+    try:
+        tmpdir = tempfile.mkdtemp()
+        site = pywikibot.Site(user="TheSandBot")
+        site._throttle = Throttle(site, multiplydelay=False)
+
+        # Multi-workers are enough to cause problems, no need for internal
+        # locking to cause even more problems
+        site.lock_page = lambda *args, **kwargs: None  # noop
+        site.unlock_page = lambda *args, **kwargs: None  # noop
+        while True:
+            if not allow_bots(image_page.text, "TheSandBot"):
+                logger.critical("Not to edit " + image_page.title())
+                continue
+
+            if not image_page.exists():
+                logger.debug(pywikibot.warning('File page does not exist ' + image_page.title()))
+                continue
+            for i in range(8):
+                try:
+                    image_page.get_file_history()
+                except pywikibot.exceptions.PageRelatedError as e:
+                    # pywikibot.exceptions.PageRelatedError:
+                    # loadimageinfo: Query on ... returned no imageinfo
+                    pywikibot.exception(e)
+                    site.throttle(write=True)
+                else:
+                    break
+            else:
+                raise
+
+            path = os.path.join(tmpdir, str(uuid.uuid1()))
+            revision = image_page.latest_file_info
+            # Download image
+            try:
+                for i in range(8):  # Attempt to download 8 times. If it fails after this many, move on
+                    try:
+                        # returns download success result (True or False)
+                        success = image_page.download(path, revision=revision)
+                    except Exception as e:
+                        pywikibot.exception(e)
+                        success = False
+                    if success:
+                        break  # if we have a success, no point continuing to try and download
+                    else:
+                        pywikibot.warning(
+                            'Possibly corrupted download on attempt %d' % i)
+                        site.throttle(write=True)
+                else:
+                    logger.warning('FIXME: Download attempt exhausted')
+                    logger.warning('FIXME: Download of ' + str(image_page.title() + ' failed. Aborting...'))
+                    continue  # move on to the next file
+
+                del success
+                img_hash = get_local_hash(path)
+                try:
+                    corrupt_result = image_is_corrupt(path)
+                except UnidentifiedImageError as e:
+                    logger.debug(
+                        image_page.title() + " ::: is not an image (or at very least not currently supported by PIL)")
+                    os.remove(path)  # file not an image
+                    store_image(image_page.title(), False, img_hash=img_hash, not_image=True)  # store in database
+                    # Previously the idea was to just raise the error,
+                    # but since this is a constant running loop, just move on
+                    # to the next file (once local removed)
+                    continue
+
+                if corrupt_result:
+                    pwb_wrappers.tag_page(image_page,
+                                          "{{TSB image identified corrupt|" +
+                                          datetime.now(
+                                              timezone.utc).strftime("%m/%d/%Y") + "|day=" + gen_nom_date()[
+                                              1] + "|month=" +
+                                          gen_nom_date()[0] + "|year=" + gen_nom_date()[2] + "}}",
+                                          "Image detected as corrupt, tagging.")
+                    store_image(image_page.title(), True, img_hash=img_hash, day_count=30)  # store in database
+
+                    try:  # TODO: Add record to database about successful notification?
+                        notify_user(site, image_page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
+                    except:  # TODO: Add record to database about failed notification?
+                        print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
+                else:  # image not corrupt
+                    # store_image(file_page.title(), False, img_hash=img_hash)  # store in database
+                    store_image(image_page.title(), False, img_hash=img_hash)  # store in database
+                    logger.info(image_page.title() + " :Not corrupt. Stored")
+
+            except Exception:
+                traceback.print_exc()
+            finally:
+                if os.path.exists(path):
+                    os.remove(path)
+
+        pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
+    finally:
+        shutil.rmtree(tmpdir)
+
 
 def process_file(image_page, site):
     text = failed = img_hash = None
     _, ext = os.path.splitext(image_page.title())  # TODO: reduce this to not include "File:"?
+
     download_attempts = 0
     while True:
         with open('./Example' + ext, 'wb') as fd:
@@ -66,9 +171,6 @@ def process_file(image_page, site):
                               "Image detected as corrupt, tagging.")
         store_image(image_page.title(), True, img_hash=img_hash)  # store in database
         print("Saved page and logged in database")
-        global number_saved
-        number_saved += 1
-        print(number_saved)
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
             notify_user(site, image_page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
@@ -86,11 +188,7 @@ def run(utils):
             offset -= 1
             print("Skipped due to offset config")
             continue
-        global number_saved  # FIXME: This section MUST be removed once trials done and approved
-        if number_saved >= 10:
-            break  # FIXME: End section
         print("Working with: " + str(page.title()))
-        # print(number_saved)
         #text = page.text
         try:
             if have_seen_image(site, page.title()):
@@ -100,7 +198,7 @@ def run(utils):
                 print("Not to edit " + page.title())
                 continue
             try:
-                process_file(page, site)
+                process_file2(page, site)
             except UnidentifiedImageError as e:  # File not an image. Best to just continue
                 continue
             except ValueError as e2:
@@ -115,6 +213,8 @@ def run(utils):
 
 def main():
     config = None
+    fileConfig('logging_config.ini')
+    logger = logging.getLogger('corrupt')
     site = pywikibot.Site(code='commons', fam='commons', user='TheSandBot')
     login_result = site.login()
     if not login_result:
