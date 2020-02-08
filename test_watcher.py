@@ -17,4 +17,6 @@ for change in rc:
         count += 1
     elif count > 5:
         break
-print(myl)
+for i in myl:
+    print("gen: " + i.gen_timestamp)
+    print("log: " + i.log_timestamp)
