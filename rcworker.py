@@ -218,7 +218,6 @@ def main():
 if __name__ == "__main__":
     try:
         fileConfig('logging_config.ini')
-        global logger
         logger = logging.getLogger(__name__)
         main()
     except KeyboardInterrupt:
