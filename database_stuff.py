@@ -150,7 +150,7 @@ def have_seen_image(site, title, page_id=None):
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     img_hash = get_remote_hash(site, title)
-    sql = "SELECT title FROM images_viewed WHERE page_id=%s AND img_hash=%s"
+    sql = "SELECT title FROM images_viewed WHERE page_id=%s AND hash=%s"
     try:
         cursor.execute(sql, (page_id, img_hash))
         msg = cursor.fetchone()
