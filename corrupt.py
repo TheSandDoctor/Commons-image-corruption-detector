@@ -182,5 +182,5 @@ def process_file(image_page, site):
 
 if __name__ == '__main__':
     fileConfig('logging_config.ini')
-    logger = logging.getLogger('corrupt')
+    logger = logging.getLogger('full_scan')
     process_file2()
