@@ -180,15 +180,7 @@ def process_file(image_page, site):
         store_image(image_page.title(), False, img_hash=img_hash)  # store in database
 
 
-def main():
-    site = pywikibot.Site(code='commons', fam='commons', user='TheSandBot')
-    login_result = site.login()
-    if not login_result:
-        raise ValueError('Incorrect password')
-    process_file2()
-
-
 if __name__ == '__main__':
     fileConfig('logging_config.ini')
     logger = logging.getLogger('corrupt')
-    main()
+    process_file2()
