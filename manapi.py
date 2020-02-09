@@ -32,9 +32,12 @@ def getPageID(title):
     """
     Fetches page ID from a given title
     :param title: title of page to get page ID for. This can be in the form of "File:<name>" or just "<name>"
-    :return: Page ID (int
+    :return: Page ID (int)
     """
-    return int(getImageInfo(title)['pageid'])
+    try:
+        return int(getImageInfo(title)['pageid'])
+    except KeyError:
+        print("Key error on pageID")
 
 
 #if __name__ == '__main__':
