@@ -20,8 +20,11 @@ from pywikibot.data.api import APIError
 from pywikibot.throttle import Throttle
 import shutil
 import traceback
+import argparse
+import copy
 
 logger = None
+skip = False
 
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
@@ -45,14 +48,31 @@ def process_file2():
         # locking to cause even more problems
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
+
+        global skip
+        # T111
+        if os.path.exists("./corrupt_have_seen_count.txt"):
+            with open("./corrupt_have_seen_count.txt", 'r') as f:
+                count_have_seen = f.readline()
+        else:
+            count_have_seen = 0
+        tmp_count = copy.deepcopy(count_have_seen)
         for image_page in pwb_wrappers.allimages():
+            if skip and tmp_count > 0:
+                tmp_count -= 1
+                continue
+            elif have_seen_image(site, image_page.title()):
+                logger.debug("Have seen:: " + image_page.title())
+                count_have_seen += 1
+                continue
+
             if not allow_bots(image_page.text, "TheSandBot"):
                 logger.critical("Not to edit " + image_page.title())
                 continue
 
-            if have_seen_image(site, image_page.title()):
-                logger.debug("Have seen:: " + image_page.title())
-                continue
+            if not skip:
+                with open("./corrupt_have_seen_count.txt", 'w+') as f:
+                    f.write(count_have_seen)
 
             if not image_page.exists():
                 logger.warning('File page does not exist:: ' + image_page.title())
@@ -187,4 +207,9 @@ def process_file(image_page, site):
 if __name__ == '__main__':
     fileConfig('logging_config.ini')
     logger = logging.getLogger('full_scan')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('fs', "--full_scan", help="whether to skip rechecks", action="store_true")
+    args = parser.parse_args()
+    if args.full_scan:
+        skip = True
     process_file2()
