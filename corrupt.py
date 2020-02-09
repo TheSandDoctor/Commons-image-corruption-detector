@@ -208,7 +208,7 @@ if __name__ == '__main__':
     fileConfig('logging_config.ini')
     logger = logging.getLogger('full_scan')
     parser = argparse.ArgumentParser()
-    parser.add_argument('fs', "--full_scan", help="whether to skip rechecks", action="store_true")
+    parser.add_argument('--fs', "--full_scan", help="whether to skip rechecks", action="store_true")
     args = parser.parse_args()
     if args.full_scan:
         skip = True
