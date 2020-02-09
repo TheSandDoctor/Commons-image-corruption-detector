@@ -70,11 +70,11 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_imag
     if not_image:
         image_data = {
             'title': title,
-            'isCorrupt': isCorrupt,
+            'isCorrupt': False,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': None,
-            'hash': None,
-            'page_id': None,
+            'hash': str(img_hash),
+            'page_id': int(page_id),
             'not_image': not_image
         }
     elif isCorrupt:
