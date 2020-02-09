@@ -50,6 +50,10 @@ def process_file2():
                 logger.critical("Not to edit " + image_page.title())
                 continue
 
+            if have_seen_image(site, image_page.title()):
+                logger.debug("Have seen:: " + image_page.title())
+                continue
+
             if not image_page.exists():
                 logger.warning('File page does not exist:: ' + image_page.title())
                 continue
