@@ -145,6 +145,7 @@ def have_seen_image(site, title, page_id=None):
     """
     if page_id is None:
         page_id = manapi.getPageID(title)
+    res = False
     global logger
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
@@ -153,11 +154,15 @@ def have_seen_image(site, title, page_id=None):
     try:
         cursor.execute(sql, (page_id, img_hash))
         msg = cursor.fetchone()
+        if msg is None:
+            res = False
+        else:
+            res = True
     except mariadb.Error as error:
         logger.error("Error: {}".format(error))
     finally:
         cnx.close()
-    return msg
+    return res
 
 
 def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, was_fixed=None):
