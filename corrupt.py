@@ -33,7 +33,7 @@ logger = None
 #         page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
 #     )
 
-def process_file2(image_page):
+def process_file2():
     tmpdir = None
     global logger
     try:
@@ -45,13 +45,13 @@ def process_file2(image_page):
         # locking to cause even more problems
         site.lock_page = lambda *args, **kwargs: None  # noop
         site.unlock_page = lambda *args, **kwargs: None  # noop
-        while True:
+        for image_page in pwb_wrappers.allimages():
             if not allow_bots(image_page.text, "TheSandBot"):
                 logger.critical("Not to edit " + image_page.title())
                 continue
 
             if not image_page.exists():
-                logger.debug(pywikibot.warning('File page does not exist ' + image_page.title()))
+                logger.warning('File page does not exist:: ' + image_page.title())
                 continue
             for i in range(8):
                 try:
@@ -70,17 +70,17 @@ def process_file2(image_page):
             revision = image_page.latest_file_info
             # Download image
             try:
-                for i in range(8):  # Attempt to download 8 times. If it fails after this many, move on
+                for i in range(8): # Attempt to download 8 times. If it fails after this many, move on
                     try:
                         # returns download success result (True or False)
                         success = image_page.download(path, revision=revision)
                     except Exception as e:
-                        pywikibot.exception(e)
+                        logger.exception(e)
                         success = False
                     if success:
                         break  # if we have a success, no point continuing to try and download
                     else:
-                        pywikibot.warning(
+                        logger.warning(
                             'Possibly corrupted download on attempt %d' % i)
                         site.throttle(write=True)
                 else:
@@ -115,7 +115,7 @@ def process_file2(image_page):
                     try:  # TODO: Add record to database about successful notification?
                         notify_user(site, image_page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
                     except:  # TODO: Add record to database about failed notification?
-                        print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
+                        logger.error("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
                 else:  # image not corrupt
                     # store_image(file_page.title(), False, img_hash=img_hash)  # store in database
                     store_image(image_page.title(), False, img_hash=img_hash)  # store in database
@@ -127,7 +127,7 @@ def process_file2(image_page):
                 if os.path.exists(path):
                     os.remove(path)
 
-        pywikibot.output("Exit - THIS SHOULD NOT HAPPEN")
+        logger.critical("Exit - THIS SHOULD NOT HAPPEN")
     finally:
         shutil.rmtree(tmpdir)
 
@@ -170,60 +170,25 @@ def process_file(image_page, site):
                               gen_nom_date()[0] + "|year=" + gen_nom_date()[2] + "}}",
                               "Image detected as corrupt, tagging.")
         store_image(image_page.title(), True, img_hash=img_hash)  # store in database
-        print("Saved page and logged in database")
+        logger.info("Saved page and logged in database")
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
             notify_user(site, image_page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
         except:  # TODO: Add record to database about failed notification?
-            print("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
+            logger.error("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
     else:  # image not corrupt
         store_image(image_page.title(), False, img_hash=img_hash)  # store in database
 
 
-def run(utils):
-    site = utils[1]
-    offset = utils[2]
-    for page in pwb_wrappers.allimages():
-        if offset > 0:
-            offset -= 1
-            print("Skipped due to offset config")
-            continue
-        print("Working with: " + str(page.title()))
-        #text = page.text
-        try:
-            if have_seen_image(site, page.title()):
-                print("Found duplicate, no need to check")
-                continue
-            if not allow_bots(page.text, "TheSandBot"):
-                print("Not to edit " + page.title())
-                continue
-            try:
-                process_file2(page, site)
-            except UnidentifiedImageError as e:  # File not an image. Best to just continue
-                continue
-            except ValueError as e2:
-                print(e2)
-                with open('downloads_failed.txt', 'a+') as f:
-                    print(e2, file=f)  # print to file
-                continue
-        except ValueError:
-            raise
-    return
-
-
 def main():
-    config = None
-    fileConfig('logging_config.ini')
-    logger = logging.getLogger('corrupt')
     site = pywikibot.Site(code='commons', fam='commons', user='TheSandBot')
     login_result = site.login()
     if not login_result:
         raise ValueError('Incorrect password')
-    offset = 0
-    utils = [config, site, offset]
-    run(utils)
+    process_file2()
 
 
 if __name__ == '__main__':
-    # main()
-    pass
+    fileConfig('logging_config.ini')
+    logger = logging.getLogger('corrupt')
+    main()
