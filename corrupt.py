@@ -210,7 +210,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--fs', "--full_scan", help="whether to skip rechecks", action="store_true")
     args = parser.parse_args()
-    if len(args.__dict__) <= 1:
+    try:
         if args.full_scan:
             skip = True
+    except AttributeError:
+        pass
     process_file2()
