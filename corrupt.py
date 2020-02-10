@@ -72,7 +72,7 @@ def process_file2():
 
             if not skip:
                 with open("./corrupt_have_seen_count.txt", 'w+') as f:
-                    f.write(str(count_have_seen))
+                    f.write('{}'.format(count_have_seen))
 
             if not image_page.exists():
                 logger.warning('File page does not exist:: ' + image_page.title())
