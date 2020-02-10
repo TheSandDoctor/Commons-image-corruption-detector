@@ -61,10 +61,15 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_imag
     :param not_image: False if file is an image, true otherwise
     :return: None
     """
-    if page_id is None and not not_image:
-        page_id = manapi.getPageID(title)
     global logger
-
+    if page_id is None and not not_image:
+        try:
+            page_id = manapi.getPageID(title)
+        except KeyError:
+            page_id = -1
+            logger.error("KeyError - cannot get page ID from API")
+    if page_id is None:
+        page_id = -1
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     if not_image:
