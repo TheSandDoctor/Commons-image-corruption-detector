@@ -159,6 +159,7 @@ def process_file2():
             finally:
                 if os.path.exists(path):
                     os.remove(path)
+                count_have_seen += 1
 
         logger.critical("Exit - THIS SHOULD NOT HAPPEN")
     finally:
