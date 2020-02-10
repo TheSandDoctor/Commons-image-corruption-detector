@@ -80,8 +80,8 @@ def process_file2():
                 logger.critical("Not to edit " + image_page.title())
                 continue
 
-            with open("./corrupt_have_seen_count.txt", 'w+') as f:
-                f.write('{}'.format(count_have_seen))
+            #with open("./corrupt_have_seen_count.txt", 'w+') as f:
+            #    f.write('{}'.format(count_have_seen))
 
             if not image_page.exists():
                 logger.warning('File page does not exist:: ' + image_page.title())
@@ -160,6 +160,8 @@ def process_file2():
                 if os.path.exists(path):
                     os.remove(path)
                 count_have_seen += 1
+                with open("./corrupt_have_seen_count.txt", 'w+') as f:
+                    f.write('{}'.format(count_have_seen))
 
         logger.critical("Exit - THIS SHOULD NOT HAPPEN")
     finally:
