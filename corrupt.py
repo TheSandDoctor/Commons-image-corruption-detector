@@ -36,6 +36,10 @@ skip = False
 #         page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
 #     )
 
+def file_is_empty(path):
+    return os.stat(path).st_size==0
+
+
 def process_file2():
     tmpdir = None
     global logger
@@ -51,11 +55,11 @@ def process_file2():
 
         global skip
         # T111
-        if os.path.exists("./corrupt_have_seen_count.txt"):
+        if os.path.exists("./corrupt_have_seen_count.txt") and not file_is_empty("./corrupt_have_seen_count.txt"):
             with open("./corrupt_have_seen_count.txt", 'r') as f:
                 try:
                     count_have_seen = int(f.readline())
-                except TypeError:
+                except (TypeError, ValueError):
                     logger.critical("Cannot cast string to int. Check corrupt_have_seen_count.txt format.")
                     raise
         else:
