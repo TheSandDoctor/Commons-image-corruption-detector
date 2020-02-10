@@ -24,7 +24,7 @@ import argparse
 import copy
 
 logger = None
-skip = False
+skip = True
 
 
 # Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     try:
         if args.full_scan:
-            skip = True
+            skip = False
     except AttributeError:
         pass
     process_file2()
