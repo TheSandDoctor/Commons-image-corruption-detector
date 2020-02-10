@@ -53,7 +53,11 @@ def process_file2():
         # T111
         if os.path.exists("./corrupt_have_seen_count.txt"):
             with open("./corrupt_have_seen_count.txt", 'r') as f:
-                count_have_seen = f.readline()
+                try:
+                    count_have_seen = int(f.readline())
+                except TypeError:
+                    logger.critical("Cannot cast string to int. Check corrupt_have_seen_count.txt format.")
+                    raise
         else:
             count_have_seen = 0
         tmp_count = copy.deepcopy(count_have_seen)
