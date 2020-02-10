@@ -68,8 +68,10 @@ def process_file2():
         for image_page in pwb_wrappers.allimages():
             if skip and tmp_count > 0:
                 tmp_count -= 1
+                logger.debug("Skipping check on " + image_page.title())
                 continue
-            elif have_seen_image(site, image_page.title()):
+
+            if have_seen_image(site, image_page.title()):
                 logger.debug("Have seen:: " + image_page.title())
                 count_have_seen += 1
                 continue
@@ -78,9 +80,8 @@ def process_file2():
                 logger.critical("Not to edit " + image_page.title())
                 continue
 
-            if not skip:
-                with open("./corrupt_have_seen_count.txt", 'w+') as f:
-                    f.write('{}'.format(count_have_seen))
+            with open("./corrupt_have_seen_count.txt", 'w+') as f:
+                f.write('{}'.format(count_have_seen))
 
             if not image_page.exists():
                 logger.warning('File page does not exist:: ' + image_page.title())
