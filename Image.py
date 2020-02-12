@@ -32,12 +32,12 @@ class ImageObj:
                 # From rcbacklog
                 self.logger.warning("KeyError1 has occurred")
                 revision = file_page.get_file_history()[pywikibot.Timestamp.fromISOformat(self.log_timestamp)]
-            except KeyError:
+            except (KeyError, ValueError):
                 try:
                     self.logger.warning("KeyError2 has occurred")
 #TODO: add check if code ever gets here
                     revision = file_page.get_file_history()[pywikibot.Timestamp.fromtimestamp(self.gen_timestamp)]
-                except KeyError:
+                except (KeyError, ValueError):
                     revision = file_page.latest_file_info
                     pywikibot.warning(
                         'Cannot fetch specified revision, falling back to '
