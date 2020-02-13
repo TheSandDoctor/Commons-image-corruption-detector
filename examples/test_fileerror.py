@@ -39,4 +39,5 @@ if __name__ == '__main__':
     # test('./Shooting_with_Fire.jpg')
     # test("./David_Ben-Gurion_pins_the_Haganah_ribbon_on_Chaim_Laskov._D358-069.jpg")
     # test("./Moshe_Prager,_Jerusalem_1967.jpg")
-    test("./Haim_Laskov_-_Yackov_Dori_-_David_Ben-Gurion_-_Hagana_Pin_1958.jpg")
+    #test("./Haim_Laskov_-_Yackov_Dori_-_David_Ben-Gurion_-_Hagana_Pin_1958.jpg")
+    test("./Tarnow_Park_Strzelecki_wiewiorka_5.jpg")
