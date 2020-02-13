@@ -153,7 +153,7 @@ class BaseCorruptScan:
                     if os.path.exists(path):
                         os.remove(path)
                     count_have_seen += 1
-                    with open("./corrupt_have_seen_count.txt", 'w+') as f:
+                    with open(self.file_count, 'w+') as f:
                         f.write('{}'.format(count_have_seen))
 
             self.logger.critical("Exit - THIS SHOULD NOT HAPPEN")
