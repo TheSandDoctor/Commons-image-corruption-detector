@@ -10,8 +10,8 @@ def test(name):
       print(name + ": Works")
     except Image.UnidentifiedImageError as e:
       print(name + ": Not an image")
-    except OSError:
-        print(name + ": Corrupt")
+    #except OSError:
+     #   print(name + ": Corrupt")
      # print(e)
     #  ex_type, ex_value, ex_traceback = sys.exc_info()
     #  trace_back = traceback.extract_tb(ex_traceback)
@@ -21,8 +21,8 @@ def test(name):
      # print("Exception type : %s " % ex_type.__name__)
       #print("Exception message : %s" %ex_value)
       #print("Stack trace : %s" %stack_trace)
-    except Exception as e2:
-      print(name + ": Corrupt")
+    #except Exception as e2:
+    #  print(name + ": Corrupt")
       #print(e2)
 
 if __name__ == '__main__':
@@ -34,3 +34,6 @@ if __name__ == '__main__':
     test("./Handschoenen_(paar)_en_beschrijving_op_papier._objectnr_KA_15684.13.tif")
     test("./Paar_handschoenen,_objectnr_KA_15683.12.tif")
     test("./Schild,_objectnr_KA_15728.tif")
+    test('./Shooting_with_Fire.jpg')
+    #test("./David_Ben-Gurion_pins_the_Haganah_ribbon_on_Chaim_Laskov._D358-069.jpg")
+    test("./Moshe_Prager,_Jerusalem_1967.jpg")
