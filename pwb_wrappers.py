@@ -5,7 +5,7 @@ from pywikibot.data.api import APIError
 site_pwb = pywikibot.Site("commons", "commons")
 
 
-def allimages(start="!", prefix="", reverse=False, step=None, total=None, content=False):
+def allimages(start=None, prefix="", reverse=False, step=None, total=None, content=False):
     pages = site_pwb.allimages(
         start=start,
         prefix=prefix,
