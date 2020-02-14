@@ -79,8 +79,8 @@ def run_worker():
                     site.throttle(write=True)
                 else:
                     break
-            else:
-                raise
+            #else:
+            #    raise
 
             # try:
             #     revision = file_page.get_file_history()[
