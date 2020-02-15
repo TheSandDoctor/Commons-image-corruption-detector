@@ -28,6 +28,7 @@ class BaseCorruptScan:
             self.file_count = "./corrupt_have_seen_count_reversed.txt"
         else:
             self.file_count = "./corrupt_have_seen_count.txt"
+        self.run = True
 
     @staticmethod
     def file_is_empty(path):
@@ -63,6 +64,8 @@ class BaseCorruptScan:
                 count_have_seen = 0
             tmp_count = copy.deepcopy(count_have_seen)
             for image_page in pwb_wrappers.allimages(reverse=self.reverse):
+                if not self.run:
+                    break
                 if self.skip and tmp_count > 0:
                     tmp_count -= 1
                     self.logger.debug("Skipping check on " + image_page.title())
@@ -79,6 +82,11 @@ class BaseCorruptScan:
 
                 if not image_page.exists():
                     self.logger.warning('File page does not exist:: ' + image_page.title())
+                    continue
+                
+                # T125
+                if image_page.isRedirectPage():
+                    logger.debug(pywikibot.warning('File page is redirect' + image_page.title()))
                     continue
 
                 for i in range(8):
@@ -155,7 +163,12 @@ class BaseCorruptScan:
                     count_have_seen += 1
                     with open(self.file_count, 'w+') as f:
                         f.write('{}'.format(count_have_seen))
-
-            self.logger.critical("Exit - THIS SHOULD NOT HAPPEN")
+            if self.run:
+                self.logger.critical("Exit - THIS SHOULD NOT HAPPEN")
+            else:
+                self.logger.critical("Exit - SHUTTING DOWN")
         finally:
             shutil.rmtree(tmpdir)
+
+    def stop(self):
+        self.run = False

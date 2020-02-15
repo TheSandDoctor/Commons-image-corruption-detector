@@ -69,6 +69,7 @@ def run_worker():
                 logger.debug(pywikibot.warning('File page does not exist ' + change.title))
                 continue
 
+            # T125
             if file_page.isRedirectPage():
                 logger.debug(pywikibot.warning('File page is redirect' + change.title))
                 continue
