@@ -71,6 +71,15 @@ class BaseCorruptScan:
                     self.logger.debug("Skipping check on " + image_page.title())
                     continue
 
+                if not image_page.exists():
+                    self.logger.warning('File page does not exist:: ' + image_page.title())
+                    continue
+
+                # T125
+                if image_page.isRedirectPage():
+                    logger.debug(pywikibot.warning('File page is redirect' + image_page.title()))
+                    continue
+                    
                 if have_seen_image(site, image_page.title()):
                     self.logger.debug("Have seen:: " + image_page.title())
                     count_have_seen += 1
@@ -80,14 +89,6 @@ class BaseCorruptScan:
                     self.logger.critical("Not to edit " + image_page.title())
                     continue
 
-                if not image_page.exists():
-                    self.logger.warning('File page does not exist:: ' + image_page.title())
-                    continue
-                
-                # T125
-                if image_page.isRedirectPage():
-                    logger.debug(pywikibot.warning('File page is redirect' + image_page.title()))
-                    continue
 
                 for i in range(8):
                     try:
