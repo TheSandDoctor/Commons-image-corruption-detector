@@ -54,7 +54,7 @@ class BaseCorruptScan:
             # T111
             if os.path.exists(self.file_count) and not self.file_is_empty(
                     self.file_count):
-                with open(self.file_count, 'r') as f:
+                with open(self.file_count, 'r', encoding="utf-8") as f:
                     try:
                         count_have_seen = int(f.readline())
                     except (TypeError, ValueError):
@@ -66,20 +66,21 @@ class BaseCorruptScan:
             for image_page in pwb_wrappers.allimages(reverse=self.reverse):
                 if not self.run:
                     break
-                if self.skip and tmp_count > 0:
-                    tmp_count -= 1
-                    self.logger.debug("Skipping check on " + image_page.title())
-                    continue
 
                 if not image_page.exists():
                     self.logger.warning('File page does not exist:: ' + image_page.title())
+                    continue
+                    
+                if self.skip and tmp_count > 0:
+                    tmp_count -= 1
+                    self.logger.debug("Skipping check on " + image_page.title())
                     continue
 
                 # T125
                 if image_page.isRedirectPage():
                     logger.debug(pywikibot.warning('File page is redirect' + image_page.title()))
                     continue
-                    
+
                 if have_seen_image(site, image_page.title()):
                     self.logger.debug("Have seen:: " + image_page.title())
                     count_have_seen += 1
