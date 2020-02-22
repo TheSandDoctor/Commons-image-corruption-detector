@@ -58,9 +58,9 @@ def run_worker():
         while True:
             _, picklemsg = redis.blpop(REDIS_KEY)
             change = pickle.loads(picklemsg) # Need to unpickle and build object once more - T99
-            file_page = pywikibot.FilePage(site, change.title)
             global logger
             logger.info(change.title)
+            file_page = pywikibot.FilePage(site, change.title)
             if not allow_bots(file_page.text, "TheSandBot"):
                 logger.critical("Not to edit " + file_page.title())
                 continue
