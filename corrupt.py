@@ -11,12 +11,13 @@ from image_corruption_utils import *
 from database_stuff import store_image, have_seen_image, gen_nom_date
 from PIL import UnidentifiedImageError
 from EUtils import EDayCount, EJobType
+from manapi import file_is_empty
 import pywikibot
 import pwb_wrappers
 import os
 import tempfile
 import uuid
-from pywikibot.data.api import APIError
+#from pywikibot.data.api import APIError
 from pywikibot.throttle import Throttle
 import shutil
 import traceback
@@ -27,20 +28,7 @@ logger = None
 skip = True
 
 
-# Save edit, we aren't checking if we are exclusion compliant as that isn't relevant in this task
-# def save_page(site, page, text, edit_summary, is_bot_edit=True, is_minor=True):
-#     if not call_home(site, "full_scan"):
-#         raise ValueError("Kill switch on-wiki is false. Terminating program.")
-#     retry_apierror(
-#         lambda:
-#         page.save(appendtext=text, summary=edit_summary, minor=is_minor, botflag=is_bot_edit, force=True)
-#     )
-
-def file_is_empty(path):
-    return os.stat(path).st_size==0
-
-
-def process_file2():
+def process_file(reverse=False):
     tmpdir = None
     global logger
     try:
@@ -65,7 +53,7 @@ def process_file2():
         else:
             count_have_seen = 0
         tmp_count = copy.deepcopy(count_have_seen)
-        for image_page in pwb_wrappers.allimages():
+        for image_page in pwb_wrappers.allimages(reverse=reverse):
             if skip and tmp_count > 0:
                 tmp_count -= 1
                 logger.debug("Skipping check on " + image_page.title())
@@ -80,12 +68,10 @@ def process_file2():
                 logger.critical("Not to edit " + image_page.title())
                 continue
 
-            #with open("./corrupt_have_seen_count.txt", 'w+') as f:
-            #    f.write('{}'.format(count_have_seen))
-
             if not image_page.exists():
                 logger.warning('File page does not exist:: ' + image_page.title())
                 continue
+
             for i in range(8):
                 try:
                     image_page.get_file_history()
@@ -130,10 +116,7 @@ def process_file2():
                         image_page.title() + " ::: is not an image (or at very least not currently supported by PIL)")
                     os.remove(path)  # file not an image
                     store_image(image_page.title(), False, img_hash=img_hash, not_image=True)  # store in database
-                    # Previously the idea was to just raise the error,
-                    # but since this is a constant running loop, just move on
-                    # to the next file (once local removed)
-                    continue
+                    continue # move onto next file
 
                 if corrupt_result:
                     pwb_wrappers.tag_page(image_page,
@@ -168,54 +151,6 @@ def process_file2():
         shutil.rmtree(tmpdir)
 
 
-def process_file(image_page, site):
-    text = failed = img_hash = None
-    _, ext = os.path.splitext(image_page.title())  # TODO: reduce this to not include "File:"?
-
-    download_attempts = 0
-    while True:
-        with open('./Example' + ext, 'wb') as fd:
-            image_page.download(fd)
-
-        hash_result, img_hash = verify_hash(site, "./Example" + ext, image_page)
-        if not hash_result:
-            if download_attempts >= 10:
-                failed = 1
-                break
-            download_attempts += 1
-            continue
-        else:
-            break
-    if failed:
-        raise ValueError("Hash check failed for " + "./Example" + ext + " vs " + str(
-            image_page.title()) + " " + download_attempts + " times. Aborting...")
-    del download_attempts
-    # Read and check if valid
-    with open("./Example" + ext, "rb") as f:
-        try:
-            result = image_is_corrupt(f)
-        except UnidentifiedImageError:
-            os.remove('./Example' + ext)  # file not an image
-            raise
-    del ext  # no longer a needed variable
-    if result:  # image corrupt
-        pwb_wrappers.tag_page(image_page,
-                              "{{TSB image identified corrupt|" +
-                              datetime.now(
-                                  timezone.utc).strftime("%m/%d/%Y") + "|day=" + gen_nom_date()[1] + "|month=" +
-                              gen_nom_date()[0] + "|year=" + gen_nom_date()[2] + "}}",
-                              "Image detected as corrupt, tagging.")
-        store_image(image_page.title(), True, img_hash=img_hash)  # store in database
-        logger.info("Saved page and logged in database")
-        # Notify the user that the file needs updating
-        try:  # TODO: Add record to database about successful notification?
-            notify_user(site, image_page, EDayCount.DAYS_30, EJobType.FULL_SCAN, minor=False)
-        except:  # TODO: Add record to database about failed notification?
-            logger.error("ERROR: Could not notify user about " + str(image_page.title()) + " being corrupt.")
-    else:  # image not corrupt
-        store_image(image_page.title(), False, img_hash=img_hash)  # store in database
-
-
 if __name__ == '__main__':
     try:
         fileConfig('logging_config.ini')
@@ -228,6 +163,6 @@ if __name__ == '__main__':
                 skip = False
         except AttributeError:
             pass
-        process_file2()
+        process_file()
     except KeyboardInterrupt:
         pass
