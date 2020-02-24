@@ -70,7 +70,7 @@ class BaseCorruptScan:
                 if not image_page.exists():
                     self.logger.warning('File page does not exist:: ' + image_page.title())
                     continue
-                    
+
                 if self.skip and tmp_count > 0:
                     tmp_count -= 1
                     self.logger.debug("Skipping check on " + image_page.title())
