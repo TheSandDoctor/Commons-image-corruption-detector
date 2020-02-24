@@ -9,3 +9,4 @@ throttle.ctrl
 venv/
 __pycache__/
 /apicache-py3/
+*.log
