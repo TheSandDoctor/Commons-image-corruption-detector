@@ -39,7 +39,6 @@ class BaseCorruptScan:
         """
         return os.stat(path).st_size == 0
 
-
     def determine_file_count(self):
         # T111
         if os.path.exists(self.file_count) and not self.file_is_empty(
@@ -96,19 +95,18 @@ class BaseCorruptScan:
                     self.logger.critical("Not to edit " + image_page.title())
                     continue
 
-
-                for i in range(8):
-                    try:
-                        image_page.get_file_history()
-                    except pywikibot.exceptions.PageRelatedError as e:
-                        # pywikibot.exceptions.PageRelatedError:
-                        # loadimageinfo: Query on ... returned no imageinfo
-                        pywikibot.exception(e)
-                        site.throttle(write=True)
-                    else:
-                        break
-                else:
-                    raise
+                # for i in range(8):
+                #     try:
+                #         image_page.get_file_history()
+                #     except pywikibot.exceptions.PageRelatedError as e:
+                #         # pywikibot.exceptions.PageRelatedError:
+                #         # loadimageinfo: Query on ... returned no imageinfo
+                #         pywikibot.exception(e)
+                #         site.throttle(write=True)
+                #     else:
+                #         break
+                # else:
+                #     raise
 
                 path = os.path.join(tmpdir, str(uuid.uuid1()))
                 revision = image_page.latest_file_info
