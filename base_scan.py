@@ -53,6 +53,16 @@ class BaseCorruptScan:
             count_have_seen = 0
         return count_have_seen
 
+    def download_image(self, image_page, path):
+        revision = image_page.latest_file_info
+        try:
+            # returns download success result (True or False)
+            success = image_page.download(path, revision=revision)
+        except Exception as e:
+            self.logger.exception(e)
+            success = False
+        return success
+            #break  # if we have a success, no point continuing to try and download
 
     def process_file(self):
         tmpdir = None
@@ -109,19 +119,14 @@ class BaseCorruptScan:
                 #     raise
 
                 path = os.path.join(tmpdir, str(uuid.uuid1()))
-                revision = image_page.latest_file_info
+                #revision = image_page.latest_file_info
                 # Download image
                 try:
                     for i in range(8):  # Attempt to download 8 times. If it fails after this many, move on
-                        try:
-                            # returns download success result (True or False)
-                            success = image_page.download(path, revision=revision)
-                        except Exception as e:
-                            self.logger.exception(e)
-                            success = False
-                        if success:
-                            break  # if we have a success, no point continuing to try and download
-                        else:
+                        download_result = self.download_image(image_page, path)
+                        if download_result:
+                            break
+                        if not download_result:
                             self.logger.warning(
                                 'Possibly corrupted download on attempt %d' % i)
                             site.throttle(write=True)
@@ -130,7 +135,7 @@ class BaseCorruptScan:
                         self.logger.warning('FIXME: Download of ' + str(image_page.title() + ' failed. Aborting...'))
                         continue  # move on to the next file
 
-                    del success
+                    del download_result
                     img_hash = get_local_hash(path)
                     try:
                         corrupt_result = image_is_corrupt(path)
