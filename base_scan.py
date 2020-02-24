@@ -39,6 +39,22 @@ class BaseCorruptScan:
         """
         return os.stat(path).st_size == 0
 
+
+    def determine_file_count(self):
+        # T111
+        if os.path.exists(self.file_count) and not self.file_is_empty(
+                self.file_count):
+            with open(self.file_count, 'r', encoding="utf-8") as f:
+                try:
+                    count_have_seen = int(f.readline())
+                except (TypeError, ValueError):
+                    self.logger.critical("Cannot cast string to int. Check corrupt_have_seen_count.txt format.")
+                    raise
+        else:
+            count_have_seen = 0
+        return count_have_seen
+
+
     def process_file(self):
         tmpdir = None
         try:
@@ -51,17 +67,7 @@ class BaseCorruptScan:
             site.lock_page = lambda *args, **kwargs: None  # noop
             site.unlock_page = lambda *args, **kwargs: None  # noop
 
-            # T111
-            if os.path.exists(self.file_count) and not self.file_is_empty(
-                    self.file_count):
-                with open(self.file_count, 'r', encoding="utf-8") as f:
-                    try:
-                        count_have_seen = int(f.readline())
-                    except (TypeError, ValueError):
-                        self.logger.critical("Cannot cast string to int. Check corrupt_have_seen_count.txt format.")
-                        raise
-            else:
-                count_have_seen = 0
+            count_have_seen = self.determine_file_count()
             tmp_count = copy.deepcopy(count_have_seen)
             for image_page in pwb_wrappers.allimages(reverse=self.reverse):
                 if not self.run:
