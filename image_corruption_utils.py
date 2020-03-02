@@ -89,7 +89,7 @@ def verify_hash(site, local, image_page):
     :return: True if match, False if not
     """
     lhash = get_local_hash(local)
-    rhash = get_remote_hash(site, str(image_page.name))
+    rhash = get_remote_hash(site, str(image_page.title()))
     result = lhash == rhash
     return [result, rhash]
 

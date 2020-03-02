@@ -7,17 +7,18 @@ import pwb_wrappers
 import os
 
 def run(site, image, isCorrupt, date_scanned, to_delete_nom):
-    image_page = pywikibot.Page(site, image)
+    image_page = pywikibot.FilePage(site, image)
     _, ext = os.path.splitext(image_page.title())  # get filetype
     if not icu.allow_bots(image_page.text, "TheSandBot"):
         print("Not to edit " + image_page.title())
         return
     download_attempts = 0
+    failed = 0
     while True:
-        with open("./Example3" + ext, "wb") as fd:
-            image_page.download(fd)
+        #with open("./Example3" + ext, "wb") as fd:
+        image_page.download("./Example3" + ext)
 
-        hash_result, img_hash = db.verify_hash(site, "./Example3" + ext, image_page)
+        hash_result, img_hash = icu.verify_hash(site, "./Example3" + ext, image_page)
         if not hash_result:
             if download_attempts >= 10:
                 failed = 1
@@ -32,12 +33,11 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
                                                                                        str(download_attempts)))
 
     del download_attempts
-    with open("./Example3" + ext, "rb") as f:
-        try:
-            result = icu.image_is_corrupt(f)
-        except UnidentifiedImageError:
-            os.remove("./Example3" + ext)  # file not an image.
-            raise
+    try:
+        result = icu.image_is_corrupt("./Example3" + ext)
+    except UnidentifiedImageError:
+        os.remove("./Example3" + ext)  # file not an image.
+        raise
     del ext  # no longer a needed variable
     if result:  # image corrupt
         return

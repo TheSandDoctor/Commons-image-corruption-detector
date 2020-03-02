@@ -18,9 +18,9 @@ insert_image = ("INSERT INTO images_viewed "
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                   "WHERE to_delete_nom = %s"}
 
-corrupt_images = "SELECT title, isCorrupt, date_scanned, to_delete_nom,  FROM images_viewed WHERE isCorrupt = 1"
+corrupt_images = "SELECT title, isCorrupt, date_scanned, to_delete_nom  FROM images_viewed WHERE isCorrupt = 1"
 
-update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, was_fixed = %s WHERE page_id = %s"}
+update_entry_sql = "UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, wasFixed = %s WHERE page_id = %s"
 
 
 def get_next_month(day_count):
@@ -204,7 +204,7 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, was_fi
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
     try:
-        cursor.execute(update_entry, (title, isCorrupt, to_delete_nom, img_hash, was_fixed, page_id))
+        cursor.execute(update_entry_sql, (title, isCorrupt, to_delete_nom, img_hash, was_fixed, page_id))
         cnx.commit()
     except mariadb.Error as error:
         logger.error("Error: {}".format(error))
