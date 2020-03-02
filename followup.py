@@ -63,9 +63,6 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
 
 if __name__ == '__main__':
     site = pywikibot.Site('commons', 'commons', user='TheSandBot')
-    login_result = site.login()
-    if not login_result:
-        raise ValueError('Incorrect password')
     raw = db.get_all_corrupt()
     for i in raw:
         run(site, i[0], i[1], i[2], i[3])
