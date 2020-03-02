@@ -108,7 +108,9 @@ def run_worker():
             #                 'Cannot fetch specified revision, falling back to '
             #                 'latest revision.')
             revision = change.getRevision(file_page)
-
+            if revision is None:
+                logger.debug("Revision none")
+                continue
             #pywikibot.output('Working on: %s at %s' % (change['title'],
             #                                           revision.timestamp))
             pywikibot.output('Working on: %s at %s' % (change.title, revision.timestamp))

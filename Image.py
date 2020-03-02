@@ -42,6 +42,9 @@ class ImageObj:
                     pywikibot.warning(
                         'Cannot fetch specified revision, falling back to '
                         'latest revision.')
+        except pywikibot.PageRelatedError:
+            self.logger.error("PageRelatedError for" + str(file_page.title()))
+            return None
         #except ValueError:
          #   pass
 
