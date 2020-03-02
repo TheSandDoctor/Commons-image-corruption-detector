@@ -145,6 +145,7 @@ def get_all_corrupt():
     global logger
     cnx = mariadb.connect(**config.config)
     cursor = cnx.cursor()
+    raw = None
     try:
         cursor.execute(corrupt_images)
         raw = cursor.fetchall()  # returns tuples
