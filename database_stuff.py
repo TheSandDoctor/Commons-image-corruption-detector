@@ -18,6 +18,9 @@ insert_image = ("INSERT INTO images_viewed "
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                   "WHERE to_delete_nom = %s"}
 
+corrupt_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
+                  "WHERE isCorrupt = 1"}
+
 update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, was_fixed = %s WHERE page_id = %s"}
 
 
@@ -137,6 +140,19 @@ def get_expired_images():
     # for i in raw:
     #    data.append(i[0])
     # return data
+
+
+def get_all_corrupt():
+    global logger
+    cnx = mariadb.connect(**config.config)
+    cursor = cnx.cursor()
+    try:
+        cursor.execute(corrupt_images)
+        raw = cursor.fetchall()  # returns tuples
+    except mariadb.Error as error:
+        logger.error("Error: {}".format(error))
+    finally:
+        cnx.close()
 
 
 def have_seen_image(site, title, page_id=None):
