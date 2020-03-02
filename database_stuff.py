@@ -18,8 +18,7 @@ insert_image = ("INSERT INTO images_viewed "
 expired_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
                   "WHERE to_delete_nom = %s"}
 
-corrupt_images = {"SELECT title, isCorrupt, date_scanned, to_delete_nom FROM images_viewed"
-                  "WHERE isCorrupt = 1"}
+corrupt_images = "SELECT title, isCorrupt, date_scanned, to_delete_nom,  FROM images_viewed WHERE isCorrupt = 1"
 
 update_entry = {"UPDATE images_viewed SET title = %s, isCorrupt = %s, to_delete_nom = %s, hash = %s, was_fixed = %s WHERE page_id = %s"}
 
@@ -153,6 +152,7 @@ def get_all_corrupt():
         logger.error("Error: {}".format(error))
     finally:
         cnx.close()
+    return raw
 
 
 def have_seen_image(site, title, page_id=None):
