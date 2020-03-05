@@ -15,12 +15,7 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument('--r', "--right", help="Check from the right", action="store_true")
         args = parser.parse_args()
-        try:
-            if args.right:
-                skip = False
-        except AttributeError:
-            pass
-        if args.right:
+        if args.r:
             scan = RCWorker(EDirections.RIGHT)
         else:
             scan = RCWorker(EDirections.LEFT)
