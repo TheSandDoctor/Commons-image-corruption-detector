@@ -52,6 +52,7 @@ if __name__ == '__main__':
                 scan = RCWorker(EDirections.LEFT)
                 p = mp.Process(target=scan.run, args=())
             processes.append(p)
+            p.daemon = True
             p.start()
             # scan.run()  # Do the work
         print(len(processes))
