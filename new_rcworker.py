@@ -47,10 +47,10 @@ if __name__ == '__main__':
             print(i)
             if right:
                 scan = RCWorker(EDirections.RIGHT)
-                p = mp.Process(target=scan.run, args=(i,))
+                p = mp.Process(target=scan.run, args=())
             else:
                 scan = RCWorker(EDirections.LEFT)
-                p = mp.Process(target=scan.run, args=(i,))
+                p = mp.Process(target=scan.run, args=())
             processes.append(p)
             p.start()
             # scan.run()  # Do the work
