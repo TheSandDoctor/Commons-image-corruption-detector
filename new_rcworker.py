@@ -37,16 +37,28 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument('--r', "--right", help="Check from the right", action="store_true")
         args = parser.parse_args()
+        right = False
         if args.r:
-            scan = RCWorker(EDirections.RIGHT)
-        else:
-            scan = RCWorker(EDirections.LEFT)
+            right = True
+        #else:
+            #scan = RCWorker(EDirections.LEFT)
 
         for i in range(0, 10):
-            p = mp.Process(target=scan.run(), args=(i,))
+            print(i)
+            if right:
+                scan = RCWorker(EDirections.RIGHT)
+                p = mp.Process(target=scan.run, args=(i,))
+            else:
+                scan = RCWorker(EDirections.LEFT)
+                p = mp.Process(target=scan.run, args=(i,))
             processes.append(p)
             p.start()
             # scan.run()  # Do the work
+        print(len(processes))
+
+        for process in processes:
+            process.join()
     except KeyboardInterrupt:
         for i in processes:
+            print("Killing process")
             i.terminate()
