@@ -8,6 +8,7 @@ import uuid
 import logging
 from logging.config import fileConfig
 from sys import exc_info
+import requests
 
 import pywikibot
 from pywikibot.throttle import Throttle
@@ -90,7 +91,10 @@ class WorkerBase():
                     for i in range(8):  # Attempt to download 8 times. If it fails after this many, move on
                         try:
                             # returns download success result (True or False)
-                            success = file_page.download(path, revision=file_page.latest_file_info)
+                            if file_page.latest_file_info['width'] > 600:
+                                success = self.download_thumbnail(file_page, path)
+                            else:
+                                success = file_page.download(path, revision=file_page.latest_file_info)
                         except Exception as e:
                             pywikibot.exception(e)
                             success = False
@@ -140,6 +144,22 @@ class WorkerBase():
             notify_user(site, file_page, EDayCount.DAYS_7, EJobType.MONITOR, minor=False)
         except ValueError:
             self.logger.error("ERROR: Could not notify user about " + str(file_page.title()) + " being corrupt.")
+
+    def download_thumbnail(self, fp, path):
+        revision = fp.latest_file_info
+        r = requests.get(fp.get_file_url(url_width=800), stream=True)
+        if r.status_code == 200:
+            try:
+                with open(path, 'wb') as f:
+                    for chunk in r.iter_content(1024):
+                        f.write(chunk)
+            except IOError as e:
+                raise e
+            sha1 = pywikibot.tools.compute_file_hash(fp.title())
+            return sha1 == revision.sha1
+        else:
+            self.logger.error("Could not download:: " + str(fp.title()))
+            return False
 
     def run(self):
         pywikibot.handle_args()
