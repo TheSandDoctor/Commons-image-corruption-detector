@@ -24,11 +24,13 @@ from redis import Redis
 import pywikibot
 from pywikibot.comms.eventstreams import site_rc_listener
 import pickle
+import requests
 import logging
 from logging.config import fileConfig
 
 from config import REDIS_KEY
 from Image import ImageObj
+
 logger = None
 
 
@@ -41,20 +43,24 @@ def run_watcher():
     for change in rc:
 
         if (
-            change['type'] == 'log' and
-            change['namespace'] == 6 and
-            change['log_type'] == 'upload'
+                change['type'] == 'log' and
+                change['namespace'] == 6 and
+                change['log_type'] == 'upload'
         ):
-            #redis.rpush(REDIS_KEY, json.dumps(change))
-            #redis.rpush(REDIS_KEY, ImageObj(json.dumps(change)))
-            pickled_img = pickle.dumps(ImageObj(change)) # Need to pickle to pass T99
+            pickled_img = pickle.dumps(ImageObj(change))  # Need to pickle to pass T99
+            logger.debug("Sent " + str(change['title']))
             redis.rpush(REDIS_KEY, pickled_img)
     logger.critical("Exit - THIS SHOULD NOT HAPPEN")
 
 
 def main():
     pywikibot.handle_args()
-    run_watcher()
+    while True:
+        try:
+            run_watcher()
+        except requests.exceptions.HTTPError:
+            logger.critical("CRITICAL: 504 error again, continuing")
+            continue
 
 
 if __name__ == "__main__":
