@@ -2,11 +2,13 @@
 .idea/
 credentials.txt
 user-config.py
+user-config_old.py
 user-password.py
 config.py
 pywikibot.lwp
 throttle.ctrl
 venv/
+venv2/
 __pycache__/
 /apicache-py3/
 *.log
