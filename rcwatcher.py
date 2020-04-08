@@ -48,6 +48,7 @@ def run_watcher():
                 change['log_type'] == 'upload'
         ):
             pickled_img = pickle.dumps(ImageObj(change))  # Need to pickle to pass T99
+            print("Sent " + str(change['title']))
             logger.debug("Sent " + str(change['title']))
             redis.rpush(REDIS_KEY, pickled_img)
     logger.critical("Exit - THIS SHOULD NOT HAPPEN")
@@ -59,6 +60,7 @@ def main():
         try:
             run_watcher()
         except requests.exceptions.HTTPError:
+            print("CRITICAL: 504 error again, continuing")
             logger.critical("CRITICAL: 504 error again, continuing")
             continue
 
