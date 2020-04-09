@@ -15,10 +15,10 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     download_attempts = 0
     failed = 0
     while True:
-        #with open("./Example3" + ext, "wb") as fd:
-        image_page.download("./Example3" + ext)
+        #with open("./Example4" + ext, "wb") as fd:
+        image_page.download("./Example4" + ext)
 
-        hash_result, img_hash = icu.verify_hash(site, "./Example3" + ext, image_page)
+        hash_result, img_hash = icu.verify_hash(site, "./Example4" + ext, image_page)
         if not hash_result:
             if download_attempts >= 10:
                 failed = 1
@@ -29,14 +29,14 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
             break
     if failed:
         raise ValueError(
-            "Hash check failed for ./Example3{0} vs {1} {2} times. Aborting...".format(ext, str(image_page.title()),
+            "Hash check failed for ./Example4{0} vs {1} {2} times. Aborting...".format(ext, str(image_page.title()),
                                                                                        str(download_attempts)))
 
     del download_attempts
     try:
-        result = icu.image_is_corrupt("./Example3" + ext)
+        result = icu.image_is_corrupt("./Example4" + ext)
     except UnidentifiedImageError:
-        os.remove("./Example3" + ext)  # file not an image.
+        os.remove("./Example4" + ext)  # file not an image.
         raise
     del ext  # no longer a needed variable
     if result:  # image corrupt
