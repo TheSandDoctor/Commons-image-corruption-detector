@@ -74,16 +74,16 @@ def run_worker():
                 logger.debug(pywikibot.warning('File page is redirect' + change.title))
                 continue
 
-            for i in range(8):
-                try:
-                    file_page.get_file_history()
-                except pywikibot.exceptions.PageRelatedError as e:
-                    # pywikibot.exceptions.PageRelatedError:
-                    # loadimageinfo: Query on ... returned no imageinfo
-                    pywikibot.exception(e)
-                    site.throttle(write=True)
-                else:
-                    break
+            # for i in range(8):
+            #     try:
+            #         file_page.get_file_history()
+            #     except pywikibot.exceptions.PageRelatedError as e:
+            #         # pywikibot.exceptions.PageRelatedError:
+            #         # loadimageinfo: Query on ... returned no imageinfo
+            #         pywikibot.exception(e)
+            #         site.throttle(write=True)
+            #     else:
+            #         break
             #else:
             #    raise
 
