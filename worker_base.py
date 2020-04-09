@@ -155,8 +155,9 @@ class WorkerBase():
                         f.write(chunk)
             except IOError as e:
                 raise e
-            sha1 = pywikibot.tools.compute_file_hash(fp.title())
-            return sha1 == revision.sha1
+            #sha1 = pywikibot.tools.compute_file_hash(fp.title())
+            #return sha1 == revision.sha1
+            return True
         else:
             self.logger.error("Could not download:: " + str(fp.title()))
             return False
