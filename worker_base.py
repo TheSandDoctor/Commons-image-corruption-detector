@@ -60,7 +60,6 @@ class WorkerBase():
                     _, picklemsg = self.redis.brpop(REDIS_KEY)
                 change = pickle.loads(picklemsg)  # Need to unpickle and build object once more - T99
                 self.logger.info(change.title)
-                self.logger.info(change.title[-3:].lower())
                 #Skip dealing with tif images and just consider them non-images w/o having to download them - T135
                 if change.title[-3:].lower() == 'tif':
                     store_image(change.title, False, img_hash=change.hash, not_image=True)  # store in database
