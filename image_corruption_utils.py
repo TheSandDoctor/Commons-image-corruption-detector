@@ -30,7 +30,7 @@ def image_is_corrupt(f):
     :raise UnidentifiedImageError if not a valid image
     """
     try:
-        if name[-3:].lower() == 'tif': # T135
+        if f[-3:].lower() == 'tif': # T135
             raise Image.UnidentifiedImageError
         image = Image.open(f)
         image.tobytes()
