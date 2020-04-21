@@ -7,6 +7,8 @@ def test(name):
     with open(name, 'rb') as f:
         try:
             image = Image.open(f)
+            if name[-3:].lower() == 'tif': # T135
+                raise Image.UnidentifiedImageError
             image.tobytes()
             print(name + ": Works")
         except Image.UnidentifiedImageError as e:

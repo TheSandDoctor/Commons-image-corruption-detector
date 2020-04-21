@@ -6,6 +6,8 @@ from PIL import Image
 def is_corrupt(name):
     with open(name, 'rb') as f:
         try:
+            if name[-3:].lower() == 'tif':
+                raise Image.UnidentifiedImageError
             image = Image.open(f)
             image.tobytes()
             return False
