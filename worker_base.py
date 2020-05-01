@@ -123,6 +123,8 @@ class WorkerBase():
                         store_image(change.title, False, img_hash=change.hash, not_image=True)  # store in database
                         # Move on to the next file
                         continue
+                    except FileNotFoundError as e2:
+                        continue
                     if corrupt_result:
                         self.handle_result(self.site, file_page, change)
                     else:  # image not corrupt

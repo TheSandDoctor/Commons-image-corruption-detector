@@ -39,6 +39,9 @@ def image_is_corrupt(f):
     except UnidentifiedImageError as e:
         logger.info(f + " ::Not an image we can deal with")
         raise
+    except FileNotFoundError as e2:
+        logger.error(f + " ::FILE NOT FOUND ON LOCAL!")
+        raise
     except OSError as e2:
         logger.info(f + " ::Image is corrupt") # If we get this far, image is corrupt
         return True

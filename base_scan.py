@@ -145,6 +145,8 @@ class BaseCorruptScan:
                         os.remove(path)  # file not an image
                         store_image(image_page.title(), False, img_hash=img_hash, not_image=True)  # store in database
                         continue  # move onto next file
+                    except FileNotFoundError as e2:
+                        continue
 
                     if corrupt_result:
                         pwb_wrappers.tag_page(image_page,
