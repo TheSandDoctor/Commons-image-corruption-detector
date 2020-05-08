@@ -43,7 +43,10 @@ def image_is_corrupt(f):
         logger.error(f + " ::FILE NOT FOUND ON LOCAL!")
         raise
     except OSError as e2:
-        logger.info(f + " ::Image is corrupt") # If we get this far, image is corrupt
+        #logging.debug("Exception : {}".format(str(e2.__str__)))
+        with open('corruptions', 'a+') as f:
+            f.write(str(f) + str(e2.__str__))
+        logger.info(str(f) + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
 
 
