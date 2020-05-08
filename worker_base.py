@@ -15,7 +15,7 @@ from pywikibot.throttle import Throttle
 
 import pwb_wrappers
 from database_stuff import store_image, get_next_month
-from image_corruption_utils import image_is_corrupt, notify_user, allow_bots, get_local_hash, get_remote_hash
+from image_corruption_utils import image_is_corrupt, notify_user, allow_bots, get_local_hash
 from config import REDIS_KEY
 from PIL import UnidentifiedImageError
 from redis import Redis
@@ -60,11 +60,11 @@ class WorkerBase():
                     _, picklemsg = self.redis.brpop(REDIS_KEY)
                 change = pickle.loads(picklemsg)  # Need to unpickle and build object once more - T99
                 self.logger.info(change.title)
-                self.logger.info(change.hash)
+                #self.logger.info(change.hash)
 
                 #Skip dealing with tif images and just consider them non-images w/o having to download them - T135
                 if change.title[-3:].lower() == 'tif':
-                    store_image(change.title, False, img_hash=change.hash, not_image=True)  # store in database
+                    store_image(change.title, False, img_hash=get_local_hash(path), not_image=True)  # store in database
                     continue
                 try:
                     file_page = pywikibot.FilePage(self.site, change.title)
@@ -118,15 +118,13 @@ class WorkerBase():
                         continue  # move on to the next file
 
                     del success
-                    self.logger.info(get_local_hash(path))
-                    self.logger.info(get_remote_hash(self.site, change.title))
                     try:
                         corrupt_result = image_is_corrupt(path)
                     except UnidentifiedImageError as e:
                         self.logger.debug(
                             change.title + " ::: is not an image (or at very least not currently supported by PIL)")
+                        store_image(change.title, False, img_hash=get_local_hash(path), not_image=True)  # store in database
                         os.remove(path)  # file not an image; delete local download of it
-                        store_image(change.title, False, img_hash=change.hash, not_image=True)  # store in database
                         # Move on to the next file
                         continue
                     except FileNotFoundError as e2:
@@ -134,10 +132,10 @@ class WorkerBase():
                             os.remove(path)
                         continue
                     if corrupt_result:
-                        self.handle_result(self.site, file_page, change)
+                        self.handle_result(self.site, file_page, get_local_hash(path))
                         #os.remove(path)
                     else:  # image not corrupt
-                        store_image(file_page.title(), False, img_hash=change.hash)  # store in database
+                        store_image(file_page.title(), False, img_hash=get_local_hash(path))  # store in database
                         self.logger.info(file_page.title() + " :Not corrupt. Stored")
 
                 except Exception:
@@ -152,7 +150,7 @@ class WorkerBase():
 
     def handle_result(self, site, file_page, change):
         tag_page(file_page)
-        store_image(file_page.title(), True, img_hash=change.hash, day_count=7)  # store in database
+        store_image(file_page.title(), True, img_hash=change, day_count=7)  # store in database
         self.logger.info("Saved page and logged in database")
         # Notify the user that the file needs updating
         try:  # TODO: Add record to database about successful notification?
