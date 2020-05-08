@@ -39,7 +39,9 @@ def image_is_corrupt(f):
         return False
     except UnidentifiedImageError as e:
         with open('other_errors', 'a+') as file:
-            file.write(f + traceback.print_exc() + "\n\n")
+            file.write(f)
+            file.write(traceback.print_exc())
+            file.write("\n\n")
         logger.info(str(f) + " ::Not an image we can deal with")
         raise
     except FileNotFoundError as e2:
@@ -48,7 +50,9 @@ def image_is_corrupt(f):
     except OSError as e2:
         #logging.debug("Exception : {}".format(str(e2.__str__)))
         with open('corruptions', 'a+') as file:
-            file.write(f + traceback.print_exc() + "\n\n")
+            file.write(f)
+            file.write(traceback.print_exc())
+            file.write("\n\n")
         logger.info(str(f) + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
 
