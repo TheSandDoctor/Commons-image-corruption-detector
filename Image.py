@@ -18,6 +18,7 @@ class ImageObj:
         self.isCorrupt = False
         fileConfig('logging_config.ini')
         self.logger = logging.getLogger(__name__)
+        self.logger.info(change['log_params']['img_sha1'])
 
     def getRevision(self, file_page):
         """
