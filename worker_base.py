@@ -111,6 +111,8 @@ class WorkerBase():
                     else:
                         pywikibot.warning('FIXME: Download attempt exhausted')
                         pywikibot.warning('FIXME: Download of ' + str(file_page.title() + ' failed. Aborting...'))
+                        if os.path.exists(path):
+                            os.remove(path)
                         continue  # move on to the next file
 
                     del success
@@ -124,9 +126,12 @@ class WorkerBase():
                         # Move on to the next file
                         continue
                     except FileNotFoundError as e2:
+                        if os.path.exists(path):
+                            os.remove(path)
                         continue
                     if corrupt_result:
                         self.handle_result(self.site, file_page, change)
+                        #os.remove(path)
                     else:  # image not corrupt
                         store_image(file_page.title(), False, img_hash=change.hash)  # store in database
                         self.logger.info(file_page.title() + " :Not corrupt. Stored")
