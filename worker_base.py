@@ -95,10 +95,10 @@ class WorkerBase():
                     for i in range(8):  # Attempt to download 8 times. If it fails after this many, move on
                         try:
                             # returns download success result (True or False)
-                            if file_page.latest_file_info['width'] > 600:
-                                success = self.download_thumbnail(file_page, path)
-                            else:
-                                success = file_page.download(path, revision=file_page.latest_file_info)
+                            #if file_page.latest_file_info['width'] > 600:
+                            #    success = self.download_thumbnail(file_page, path)
+                            #else:
+                            success = file_page.download(path, revision=file_page.latest_file_info)
                         except Exception as e:
                             pywikibot.exception(e)
                             success = False
