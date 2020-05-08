@@ -34,18 +34,20 @@ def image_is_corrupt(f):
             raise Image.UnidentifiedImageError
         image = Image.open(f)
         image.tobytes()
-        logger.debug(f + " ::Image conversion successful")
+        logger.debug(str(f) + " ::Image conversion successful")
         return False
     except UnidentifiedImageError as e:
-        logger.info(f + " ::Not an image we can deal with")
+        with open('other_errors', 'a+') as file:
+            file.write(str(e.__str__) + "\n\n")
+        logger.info(str(f) + " ::Not an image we can deal with")
         raise
     except FileNotFoundError as e2:
-        logger.error(f + " ::FILE NOT FOUND ON LOCAL!")
+        logger.error(str(f) + " ::FILE NOT FOUND ON LOCAL!")
         raise
     except OSError as e2:
         #logging.debug("Exception : {}".format(str(e2.__str__)))
-        with open('corruptions', 'a+') as f:
-            f.write(str(f) + str(e2.__str__))
+        with open('corruptions', 'a+') as file:
+            file.write(str(f) + str(e2.__str__) + "\n\n")
         logger.info(str(f) + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
 
