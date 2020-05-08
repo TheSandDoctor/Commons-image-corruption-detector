@@ -119,7 +119,7 @@ class WorkerBase():
 
                     del success
                     self.logger.info(get_local_hash(path))
-                    self.logger.info(get_remote_hash(self.site, path))
+                    self.logger.info(get_remote_hash(self.site, change.title))
                     try:
                         corrupt_result = image_is_corrupt(path)
                     except UnidentifiedImageError as e:
