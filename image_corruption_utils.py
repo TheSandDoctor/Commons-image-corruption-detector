@@ -13,6 +13,7 @@ import mwparserfromhell
 import logging
 from logging.config import fileConfig
 from pwb_wrappers import retry_apierror
+import traceback
 
 ImageFile.MAXBLOCK = 1
 
@@ -38,7 +39,7 @@ def image_is_corrupt(f):
         return False
     except UnidentifiedImageError as e:
         with open('other_errors', 'a+') as file:
-            file.write(str(e.__str__) + "\n\n")
+            file.write(f + traceback.print_exc() + "\n\n")
         logger.info(str(f) + " ::Not an image we can deal with")
         raise
     except FileNotFoundError as e2:
@@ -47,7 +48,7 @@ def image_is_corrupt(f):
     except OSError as e2:
         #logging.debug("Exception : {}".format(str(e2.__str__)))
         with open('corruptions', 'a+') as file:
-            file.write(str(f) + str(e2.__str__) + "\n\n")
+            file.write(f + traceback.print_exc() + "\n\n")
         logger.info(str(f) + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
 
