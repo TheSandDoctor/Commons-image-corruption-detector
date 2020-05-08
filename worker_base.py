@@ -15,7 +15,7 @@ from pywikibot.throttle import Throttle
 
 import pwb_wrappers
 from database_stuff import store_image, get_next_month
-from image_corruption_utils import image_is_corrupt, notify_user, allow_bots
+from image_corruption_utils import image_is_corrupt, notify_user, allow_bots, get_local_hash, get_remote_hash
 from config import REDIS_KEY
 from PIL import UnidentifiedImageError
 from redis import Redis
@@ -61,6 +61,7 @@ class WorkerBase():
                 change = pickle.loads(picklemsg)  # Need to unpickle and build object once more - T99
                 self.logger.info(change.title)
                 self.logger.info(change.hash)
+
                 #Skip dealing with tif images and just consider them non-images w/o having to download them - T135
                 if change.title[-3:].lower() == 'tif':
                     store_image(change.title, False, img_hash=change.hash, not_image=True)  # store in database
@@ -117,6 +118,8 @@ class WorkerBase():
                         continue  # move on to the next file
 
                     del success
+                    self.logger.info(get_local_hash(path))
+                    self.logger.info(get_remote_hash(self.site, path))
                     try:
                         corrupt_result = image_is_corrupt(path)
                     except UnidentifiedImageError as e:
