@@ -64,7 +64,7 @@ class WorkerBase():
 
                 #Skip dealing with tif images and just consider them non-images w/o having to download them - T135
                 if change.title[-3:].lower() == 'tif':
-                    store_image(change.title, False, img_hash=get_local_hash(path), not_image=True)  # store in database
+                    store_image(change.title, False, img_hash=-1, not_image=True)  # store in database
                     continue
                 try:
                     file_page = pywikibot.FilePage(self.site, change.title)
