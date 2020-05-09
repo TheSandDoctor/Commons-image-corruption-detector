@@ -51,7 +51,10 @@ def image_is_corrupt(f):
         #logging.debug("Exception : {}".format(str(e2.__str__)))
         with open('corruptions', 'a+') as file:
             file.write(f)
-            file.write(traceback.print_exc())
+            try:
+                file.write(traceback.print_exc())
+            except TypeError:
+                pass
             file.write("\n\n")
         logger.info(str(f) + " ::Image is corrupt") # If we get this far, image is corrupt
         return True
