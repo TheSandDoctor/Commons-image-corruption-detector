@@ -87,7 +87,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_imag
     elif isCorrupt:
         image_data = {
             'title': title,
-            'isCorrupt': isCorrupt,
+            'isCorrupt': True,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': get_next_month(day_count),
             'hash': str(img_hash),
@@ -97,7 +97,7 @@ def store_image(title, isCorrupt, img_hash, day_count=30, page_id=None, not_imag
     else:
         image_data = {
             'title': title,
-            'isCorrupt': isCorrupt,
+            'isCorrupt': False,
             'date_scanned': datetime.now(timezone.utc).date().strftime('%m/%d/%Y'),
             'to_delete_nom': None,
             'hash': str(img_hash),
@@ -212,3 +212,45 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, was_fi
         cnx.close()
     logger.info("Record updated")
     logger.debug("Record updated -- " + str(page_id))
+
+def entry_was_deleted(title):
+    sql_get = "SELECT * FROM `images_viewed` WHERE `images_viewed`.`title` = %s"
+    sql_delete = 'DELETE FROM `images_viewed` WHERE `images_viewed`.`title` = %s?'
+    sql_insert = ("INSERT INTO deleted "
+                "(title, isCorrupt, date_scanned, to_delete_nom, hash, page_id, not_image) "
+                "VALUES (%(title)s, 1, %(date_scanned)s, %(to_delete_nom)s, %(hash)s, %(page_id)s, %(not_image)s)")
+    cnx = mariadb.connect(**config.config)
+    cursor = cnx.cursor()
+    raw = None
+    try:
+        cursor.execute(sql_get, title)
+        raw = cursor.fetchall()  # returns tuples
+    except mariadb.Error as error:
+        logger.error("Error: {}".format(error))
+    finally:
+        cnx.close()
+
+    image, isCorrupt, date_scanned, to_delete_nom, img_hash, page_id, was_fixed, not_image = raw
+    obj = {
+            'title': title,
+            'isCorrupt': str(isCorrupt),
+            'date_scanned': str(date_scanned),
+            'to_delete_nom': str(to_delete_nom),
+            'hash': str(img_hash),
+            'page_id': int(page_id),
+            'not_image': int(not_image)
+    }
+    try:
+        cursor.execute(sql_insert, obj)
+        cnx.commit()
+    except mariadb.Error as error:
+        logger.error("Error: {}".format(error))
+    finally:
+        cnx.close()
+    try:
+        cursor.execute(sql_delete, title)
+        cnx.commit()
+    except mariadb.Error as error:
+        logger.error("Error: {}".format(error))
+    finally:
+        cnx.close()

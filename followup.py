@@ -16,17 +16,21 @@ def run(site, image, isCorrupt, date_scanned, to_delete_nom):
     failed = 0
     while True:
         #with open("./Example3" + ext, "wb") as fd:
-        image_page.download("./Example3" + ext)
+        try:
+            image_page.download("./Example3" + ext)
 
-        hash_result, img_hash = icu.verify_hash(site, "./Example3" + ext, image_page)
-        if not hash_result:
-            if download_attempts >= 10:
-                failed = 1
+            hash_result, img_hash = icu.verify_hash(site, "./Example3" + ext, image_page)
+            if not hash_result:
+                if download_attempts >= 10:
+                    failed = 1
+                    break
+                download_attempts += 1
+                continue
+            else:
                 break
-            download_attempts += 1
+        except pywikibot.exceptions.NoPage:
+            db.entry_was_deleted(image_page.title())
             continue
-        else:
-            break
     if failed:
         raise ValueError(
             "Hash check failed for ./Example3{0} vs {1} {2} times. Aborting...".format(ext, str(image_page.title()),
