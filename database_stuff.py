@@ -214,8 +214,8 @@ def update_entry(title, isCorrupt, to_delete_nom, img_hash, page_id=None, was_fi
     logger.debug("Record updated -- " + str(page_id))
 
 def entry_was_deleted(title):
-    sql_get = "SELECT * FROM `images_viewed` WHERE `images_viewed`.`title` = %s"
-    sql_delete = 'DELETE FROM `images_viewed` WHERE `images_viewed`.`title` = %s'
+    sql_get = "SELECT * FROM images_viewed WHERE title = %s"
+    sql_delete = 'DELETE FROM images_viewed WHERE title = %s'
     sql_insert = ("INSERT INTO deleted "
                 "(title, isCorrupt, date_scanned, to_delete_nom, hash, page_id, not_image) "
                 "VALUES (%(title)s, 1, %(date_scanned)s, %(to_delete_nom)s, %(hash)s, %(page_id)s, %(not_image)s)")
