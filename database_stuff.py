@@ -233,7 +233,7 @@ def entry_was_deleted(title):
     image, isCorrupt, date_scanned, to_delete_nom, img_hash, page_id, was_fixed, not_image = raw
     obj = {
             'title': title,
-            'isCorrupt': str(isCorrupt),
+            #'isCorrupt': str(isCorrupt),
             'date_scanned': str(date_scanned),
             'to_delete_nom': str(to_delete_nom),
             'hash': str(img_hash),
